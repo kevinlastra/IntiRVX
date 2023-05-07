@@ -22,7 +22,7 @@ logic [CELL_SIZE-1:0] data[NB_CELLS-1:0];
 
 
 
-always @(posedge clk or negedge rst_n) begin
+always @(negedge clk) begin
   if(rst_n) begin
     resp_data <= {data[adr+3], data[adr+2], data[adr+1], data[adr]};
   end

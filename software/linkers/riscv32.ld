@@ -1,20 +1,22 @@
 
 
 ENTRY (main)
+
+
 SECTIONS
 {
     . = 0x10000;
     .text : 
     { 
-        *(.text)
+      *(.text)
     }
     . = 0x20000000;
     .data : 
     { 
-        *(.data) 
+      *(.data) 
     }
     .bss : 
     { 
-        *(.bss) 
+      *(.bss) 
     }
 }

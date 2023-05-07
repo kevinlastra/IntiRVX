@@ -16,7 +16,7 @@ FLAGS= -nostdlib -march=${MARCH} -mabi=${MABI} -T ../linkers/riscv32.ld -I/usr/i
 
 TEXT_BASE_ADDRESSE=0x10000
 
-%.riscv : %.o
+%.riscv : %.o crt0.o
 	$(MAKE) $*.dump
 	@mv $< $@
 	$(MAKE) $*.ihex
@@ -25,8 +25,11 @@ TEXT_BASE_ADDRESSE=0x10000
 	@mv $*.dhex dhex
 	../../build/sim/obj_dir/${TB}
 
+crt0.o: 
+	${GCC} -nostartfiles ${FLAGS} ../crt0/crt0.s -o crt0.o
+
 %.o : %.c
-	${GCC} ${FLAGS} $< -o $@
+	${GCC} ${FLAGS} $< crt0.o -o $@
 
 %.dump : %.o
 	${DUMP} -d $< > $*.dump

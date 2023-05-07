@@ -41,6 +41,7 @@ module tb_cpu
     $display("Loading memory.");
     
     $readmemh("../../software/tests/ihex", mem.data);      
+    $displayh(mem.data);
   end
 
 
