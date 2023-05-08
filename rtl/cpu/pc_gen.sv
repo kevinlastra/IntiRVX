@@ -8,15 +8,19 @@ module pc_gen
   input logic rst_n,
 
   // Ifetch interface
+  input logic instr_valide,
   input logic[xlen-1:0] instruction,
   output logic ok_o,
 
   // Register interface
+  output logic data_valid,
   output logic[32:0] data,
   input logic ok_i,
 
   // PC control interface
-  output logic[xlen-1:0] pc
+  output logic next_pc_valide,
+  output logic[xlen-1:0] next_pc,
+  output logic jal_instr
   );
 
 // PARAMETERS
@@ -33,8 +37,14 @@ logic[24:0] reg_imm_parse_instr;
 logic[32:0] data_i;
 
 logic[xlen-1:0] start_address = 'h0;
-logic[xlen-1:0] pc_next;
 
+logic[xlen-1:0] pc;
+
+logic state_c;
+logic init = 1;
+
+logic INIT = 0;
+logic NEXT = 1;
 // Decode
 
 always begin
@@ -48,23 +58,43 @@ decoder_PG decoder
   .decode(decode)
 );
 
-// calc new address
-initial begin
-  pc = start_address;
+always begin
+  jal_instr = decode == 'h60;
 end
 
+// calc new address
 always begin
-  if(rst_n)begin
-    if (decode == 'h7) begin
-      pc_next = pc + {11'h0 , instruction[20], instruction[10:1], instruction[11], instruction[19:12]};
-    end else begin
-      pc_next = pc + 4;
-    end
+  if(rst_n) begin
+    case (state_c)
+      INIT : begin
+        next_pc = start_address;
+      end 
+      NEXT : begin
+        if(instr_valide) begin
+          if (jal_instr) begin
+            next_pc = pc + {{11{instruction[31]}}, instruction[19:12], instruction[11], instruction[30:21], 1'b0};
+          end else begin
+            next_pc = pc + 4;
+          end
+        end
+      end
+    endcase
   end
 end
 always @(posedge clk) begin
+  if (rst_n) begin
+    if(init) begin
+      init <= 0;
+    end else begin
+      state_c <= NEXT;
+    end
+  end
+end
+
+    
+always @(posedge clk) begin
   if(rst_n)begin
-    pc <= pc_next;
+    pc <= next_pc;
   end
 end
 
@@ -79,12 +109,19 @@ fifo #(.DATA_SIZE($bits(data_i))) pipeline_d2r
   .rst_n(rst_n),
   .data_i(data_i),
   .valide(1),
+  .flush(0),
+  .data_valid(data_valid),
   .data_o(data),
   .ok(ok_i)
 );
 
 always begin
+  next_pc_valide = ok_i;
+end
+
+always begin
   ok_o = 1;
 end
+
 
 endmodule

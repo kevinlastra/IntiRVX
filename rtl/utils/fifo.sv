@@ -12,8 +12,10 @@ module fifo
   // input
   input logic[DATA_SIZE-1:0] data_i,
   input logic valide,
+  input logic flush,
 
   // output
+  output logic data_valid,
   output logic[DATA_SIZE-1:0] data_o,
   input logic ok
 );
@@ -31,8 +33,11 @@ always @(posedge clk) begin
 end
 
 always begin
-  if(valide) begin
+  if(flush) begin
+    data_valid = 0;
+  end else if(valide) begin
     data = data_i;
+    data_valid = 1;
   end
 end
 

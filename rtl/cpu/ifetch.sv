@@ -14,11 +14,13 @@ module ifetch
   input logic[xlen-1:0] resp,
 
 	// Pc_gen interface
+  output logic data_valid,
 	output logic[xlen-1:0] data,
   input logic ok,
 
   // PC Control interface
-  input logic[xlen-1:0] target
+  input logic[xlen-1:0] target,
+  input logic flush
 );
 parameter xlen = 32;
 
@@ -34,6 +36,8 @@ fifo #(.DATA_SIZE(xlen)) pipeline_f2d
   .rst_n(rst_n),
   .data_i(resp),
   .valide(1),
+  .flush(flush),
+  .data_valid(data_valid),
   .data_o(data),
   .ok(ok)
 );

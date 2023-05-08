@@ -19,4 +19,4 @@ run:
 	./obj_dir/${VTB}
 
 clean:
-	rm -rf obj_dir
+	rm -rf obj_dir *.vcd
