@@ -26,10 +26,10 @@ TEXT_BASE_ADDRESSE=0x10000
 	../../build/sim/obj_dir/${TB}
 
 crt0.o: 
-	${GCC} -nostartfiles ${FLAGS} ../crt0/crt0.s -o crt0.o
+	${GCC} -nostartfiles ${FLAGS} ../crt0/crt0.c -c
 
 %.o : %.c
-	${GCC} ${FLAGS} $< crt0.o -o $@
+	${GCC} ${FLAGS} crt0.o $< -o $@
 
 %.dump : %.o
 	${DUMP} -d $< > $*.dump

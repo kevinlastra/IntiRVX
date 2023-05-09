@@ -5,12 +5,12 @@
 module decoder_PG
 (
   input logic[17:0] instruction,
-  output logic[7:0] decode
+  output logic[9:0] decode
 );
 parameter xlen = 32;
 
 logic[3:0] instr_type;
-logic[3:0] instr_code;
+logic[5:0] instr_code;
 
 always  begin
   casez (instruction)
@@ -221,33 +221,33 @@ always  begin
     end
     18'b????????0011110011: // CSRRW
     begin
-      instr_type = 'h8;
-      instr_code = 'h0;
+      instr_type = 'h1;
+      instr_code = 'hd;
     end
     18'b????????0101110011: // CSRRS
     begin
-      instr_type = 'h8;
-      instr_code = 'h1;
+      instr_type = 'h1;
+      instr_code = 'he;
     end
     18'b????????0111110011: // CSRRC
     begin
-      instr_type = 'h8;
-      instr_code = 'h2;
+      instr_type = 'h1;
+      instr_code = 'hf;
     end
     18'b????????1011110011: // CSRRWI
     begin
-      instr_type = 'h8;
-      instr_code = 'h3;
+      instr_type = 'h1;
+      instr_code = 'h10;
     end
     18'b????????1101110011: // CSRRSI
     begin
-      instr_type = 'h8;
-      instr_code = 'h4;
+      instr_type = 'h1;
+      instr_code = 'h11;
     end
     18'b????????1111110011: // CSRRCI
     begin
-      instr_type = 'h8;
-      instr_code = 'h0;
+      instr_type = 'h1;
+      instr_code = 'h12;
     end
     default: 
     begin

@@ -14,7 +14,7 @@ module pc_gen
 
   // Register interface
   output logic data_valid,
-  output logic[32:0] data,
+  output logic[34:0] data,
   input logic ok_i,
 
   // PC control interface
@@ -29,12 +29,12 @@ parameter xlen = 32;
 
 // local variables
 
-logic[7:0] decode;
+logic[9:0] decode;
 
 logic[17:0] decode_parse_instr;
 logic[24:0] reg_imm_parse_instr;
 
-logic[32:0] data_i;
+logic[34:0] data_i;
 
 logic[xlen-1:0] start_address = 'h0;
 

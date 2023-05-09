@@ -29,7 +29,7 @@ module cpu
   logic ok_d2f;
 
   logic data_valid_pg2r;
-  logic[32:0] data_pg2r;
+  logic[34:0] data_pg2r;
   logic ok_r2p;
   
 
