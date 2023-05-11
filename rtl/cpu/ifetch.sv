@@ -3,7 +3,6 @@
 
 
 module ifetch
-//import CPU_config::*;
 (
 	// Global interface
 	input logic clk,

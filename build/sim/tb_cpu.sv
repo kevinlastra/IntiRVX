@@ -4,7 +4,6 @@
 
 
 module tb_cpu
-//import system_config::*;
 (
   input logic clk,
   input logic rst_n
@@ -41,7 +40,6 @@ module tb_cpu
     $display("Loading memory.");
     
     $readmemh("../../software/tests/ihex", mem.data);      
-    $displayh(mem.data);
   end
 
 

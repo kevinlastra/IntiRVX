@@ -26,7 +26,7 @@ logic[DATA_SIZE-1:0] data;
 
 // 
 
-always @(posedge clk) begin
+always_ff @(posedge clk) begin
   if(rst_n && ok) begin
     data_o <= data;
   end
@@ -36,9 +36,9 @@ always begin
   if(flush) begin
     data_valid = 0;
   end else if(valide) begin
-    data = data_i;
     data_valid = 1;
   end
+  data = data_i;
 end
 
 endmodule

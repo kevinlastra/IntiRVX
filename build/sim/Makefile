@@ -6,14 +6,13 @@ VTB=Vtb_cpu
 REMOVE_LINT=-Wno-STMTDLY -Wno-UNUSED -Wno-ASSIGNIN
 FLAGS= -Wall --trace --exe --build ${REMOVE_LINT} --cc
 SRC= -y ../../rtl/cpu \
-		 -y ../../rtl/clock \
-		 -y ../../rtl/memory \
-		 -y ../../rtl/utils
-
-PACKAGES= #-y ./system_config.sv -y ./CPU_config.sv
+	 -y ../../rtl/clock \
+	 -y ../../rtl/memory \
+	 -y ../../rtl/utils \
+	 -y .
 
 cpu:
-	verilator ${PACKAGES} ${FLAGS} ${SRC}  ${TB-CC} ${TB}
+	verilator ${FLAGS} ${SRC} ${TB-CC} ${TB}
 
 run:
 	./obj_dir/${VTB}

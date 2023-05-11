@@ -2,6 +2,7 @@
 
 
 module pc_gen
+//import cpu_configuration::*;
 (
   // Global interface
   input logic clk,
@@ -14,8 +15,10 @@ module pc_gen
 
   // Register interface
   output logic data_valid,
-  output logic[34:0] data,
+  output logic[39:0] data,
   input logic ok_i,
+  output logic[xlen-1:0] instr_pc,
+  output logic[xlen-1:0] jal_res,
 
   // PC control interface
   output logic next_pc_valide,
@@ -24,17 +27,16 @@ module pc_gen
   );
 
 // PARAMETERS
-
 parameter xlen = 32;
 
 // local variables
 
-logic[9:0] decode;
+logic[14:0] decode;
 
 logic[17:0] decode_parse_instr;
 logic[24:0] reg_imm_parse_instr;
 
-logic[34:0] data_i;
+logic[39:0] data_i;
 
 logic[xlen-1:0] start_address = 'h0;
 
@@ -58,8 +60,8 @@ decoder_PG decoder
   .decode(decode)
 );
 
-always begin
-  jal_instr = decode == 'h60;
+always begin 
+  jal_instr = decode == 'h0100;
 end
 
 // calc new address
@@ -94,7 +96,9 @@ end
     
 always @(posedge clk) begin
   if(rst_n)begin
+    instr_pc <= pc;
     pc <= next_pc;
+    jal_res <= next_pc;
   end
 end
 
@@ -103,7 +107,7 @@ always begin
   data_i = {decode, reg_imm_parse_instr};
 end
 
-fifo #(.DATA_SIZE($bits(data_i))) pipeline_d2r
+fifo #(.DATA_SIZE($bits(data_i))) pipeline_pg2r
 (
   .clk(clk),
   .rst_n(rst_n),
