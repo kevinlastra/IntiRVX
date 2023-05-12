@@ -20,7 +20,10 @@ module alu
   input logic[xlen-1:0] rs2,
   input logic[4:0] rd,
 
+  input logic[xlen-1:0] immediate,
+  input logic imm,
   // Result Output
+  output logic result_v,
   output logic[xlen-1:0] result,
   output logic branch
 );
@@ -41,12 +44,15 @@ logic illegal_instr;
 
 
 always begin
+  if(imm)
+    opb = immediate;
+  else
+    opb = rs2;
+
   if((sub_unit == 3'h2 && sel == 4'h1) || 
     (sub_unit == 3'h3 && (sel == 4'h0 && sel == 4'h1)) || 
     (sub_unit == 3'h1))
-    opb = ~rs2;
-  else
-    opb = rs2;
+    opb = ~opb;
 end
 
 always begin
@@ -141,6 +147,10 @@ always begin
         illegal_instr = 1;
     endcase
   end
+end
+
+always begin
+  result_v = ~illegal_instr;
 end
 
 always begin

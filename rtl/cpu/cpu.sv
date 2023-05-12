@@ -9,17 +9,24 @@ module cpu
   input logic rst_n,
 
   
-  // system inputs
-  input logic [xlen-1:0] resp_data,
+  // system imem interface
+  input logic [xlen-1:0] resp_instruction,
+  output logic [xlen-1:0] adr_instruction,
 
-  // system outputs
-  output logic [xlen-1:0] adr
+  // system dmem interface
+  output logic r_v,
+  output logic w_v,
+  output logic[xlen-1:0] data_adr,
+  output logic[xlen-1:0] data_o,
+  output logic[3:0] strobe,
+
+  input logic[xlen-1:0] dmem_resp,
+  input logic dmem_resp_v
 
 );
   // PARAMETERS
   parameter xlen = 32;
   
-  // local variables
 
   // ifetch
   logic[xlen-1:0] data_f2d;
@@ -52,20 +59,30 @@ module cpu
   logic[xlen-1:0] rs1;
   logic[xlen-1:0] rs2;
   logic[4:0] rd;
+  logic imm_o;
+  logic[xlen-1:0] immediate_o;
   logic ok_r2p;
 
   // ALU
-  logic ok_alu2r;
+  logic alu_result_v;
   logic[xlen-1:0] alu_result;
   logic alu_branch;
+
+  logic ok_alu2r;
+
+  // MEM
+  logic mem_result_v;
+  logic[xlen-1:0] mem_result;
+
+  logic ok_mem2r;
 
   // instruction fetch Unit
   ifetch ifetch
   (
     .clk(clk),
     .rst_n(rst_n),
-    .target_address(adr),
-    .resp(resp_data),
+    .target_address(adr_instruction),
+    .resp(resp_instruction),
     .data_valid(data_valid_f2d),
     .data(data_f2d),
     .ok(ok_d2f),
@@ -116,6 +133,8 @@ module cpu
     .rs1_o(rs1),
     .rs2_o(rs2),
     .rd_o(rd),
+    .imm_o(imm_o),
+    .immediate_o(immediate_o),
     .jal_res_o(jal_res_o),
     .ok_i(1),
     .res_data(32'h0),
@@ -134,10 +153,36 @@ module cpu
     .rs1(rs1),
     .rs2(rs2),
     .rd(rd),
+    .immediate(immediate_o),
+    .imm(imm_o),
+    .result_v(alu_result_v),
     .result(alu_result),
     .branch(alu_branch)
   );
 
+  mem mem
+  (
+    .clk(clk),
+    .rst_n(rst_n),
+    .ok_o(ok_mem2r),
+    .unit(unit_o),
+    .sub_unit(sub_unit_o),
+    .sel(sel_o),
+    .rs1(rs1),
+    .rs2(rs2),
+    .rd(rd),
+    .immediate(immediate_o),
+    .imm(imm_o),
+    .r_v(r_v),
+    .w_v(w_v),
+    .req_adr(data_adr),
+    .req_data(data_o),
+    .req_strobe(strobe),
+    .hit(dmem_resp_v),
+    .mem_res(dmem_resp[15:0]),
+    .result(mem_result),
+    .result_v(mem_result_v)
+  );
 
 
 endmodule
