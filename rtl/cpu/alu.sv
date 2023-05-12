@@ -14,20 +14,18 @@ module alu
 
   input logic[1:0] unit,
   input logic[2:0] sub_unit,
-  input logic[5:0] sel,
+  input logic[3:0] sel,
 
   input logic[xlen-1:0] rs1,
   input logic[xlen-1:0] rs2,
   input logic[4:0] rd,
-  input logic[xlen-1:0] immediate,
-  input logic imm,
 
   // Result Output
   output logic[xlen-1:0] result,
   output logic branch
 );
 
-
+parameter xlen = 32;
 
 logic[xlen-1:0] opb;
 logic[xlen-1:0] alu_res;
@@ -40,17 +38,18 @@ logic greater_eq_u;
 logic diff;
 
 logic illegal_instr;
+
+
 always begin
-  if(imm)
-    opb = immediate;
-  else
-    opb = rs2; 
-
-  if((sub_unit == 3'h2 && sel == 5'h1) || 
-    (sub_unit == 3'h3 && (sel == 5'h0 && sel == 5'h1)) || 
+  if((sub_unit == 3'h2 && sel == 4'h1) || 
+    (sub_unit == 3'h3 && (sel == 4'h0 && sel == 4'h1)) || 
     (sub_unit == 3'h1))
-    opb = !opb;
+    opb = ~rs2;
+  else
+    opb = rs2;
+end
 
+always begin
   diff = opb[31] ^ rs1[31];
 end
 
@@ -60,95 +59,88 @@ end
 
 always begin
   illegal_instr = 0;
-  if(sub_unit == 3'h0)
-  {
+  if(sub_unit == 3'h0) begin
     case (sel)
-      6'h00: begin
-        result = immediate;
+      4'h00: begin
+        result = rs2;
       end
-      6'h01: begin
+      4'h01: begin
         result = alu_res;
       end
-      6'h02: begin
+      4'h02: begin
         result = alu_res + 4;
       end 
-      6'h03: begin
+      4'h03: begin
         result = alu_res;
       end
       default: 
       illegal_instr = 1;
     endcase
-  }
-  else if(sub_unit == 3'h1)
-  {
+  end else if(sub_unit == 3'h1) begin
     case (sel)
-      5'h0: begin
+      4'h0: begin
         branch = alu_res == 0;
       end
-      5'h1: begin
+      4'h1: begin
         branch = alu_res != 0;
       end
-      5'h2: begin
+      4'h2: begin
         branch = diff? rs1[31]: alu_res[31];
       end
-      5'h3: begin
+      4'h3: begin
         branch = diff? rs2[31]: !alu_res[31];
       end
-      5'h4: begin
+      4'h4: begin
         branch = diff? rs2[31]: alu_res[31];
       end
-      5'h5: begin
+      4'h5: begin
         branch = diff? rs1[31]: !alu_res[31];
       end
       default: 
         illegal_instr = 1;
     endcase
 
-    if(branch)
-      result = immediate;
-  }
-  else if(sub_unit == 3'h2)
-  {
+    if(branch) begin
+      result = rs2;
+    end
+    
+  end else if(sub_unit == 3'h2) begin
     result = alu_res;
-  }
-  else if(sub_unit == 3'h3)
-  {
+  end else if(sub_unit == 3'h3) begin
     case (sel)
-      5'h0 : begin
-        result = diff? rs1[31]: alu_res[31];
+      4'h0 : begin
+        result = {{xlen-1{1'b0}}, diff? rs1[31]: alu_res[31]};
       end
-      5'h1 : begin
-        result = diff? rs2[31]: alu_res[31];
+      4'h1 : begin
+        result = {{xlen-1{1'b0}}, diff? rs2[31]: alu_res[31]};
       end
-      5'h2 : begin
+      4'h2 : begin
         result = rs1 ^ opb;
       end
-      5'h3 : begin
+      4'h3 : begin
         result = rs1 | opb;
       end 
-      5'h4 : begin
+      4'h4 : begin
         result = rs1 & opb;
       end
       default: 
       illegal_instr = 1;
     endcase
-  }
-  else if(sub_unit == 3'h4)
-  {
+  end else if(sub_unit == 3'h4) begin
     case (sel)
-      5'h0 : begin
+      4'h0 : begin
         result = rs1 << opb;
       end
-      5'h1 : begin
+      4'h1 : begin
         result = rs1 >> opb;
       end
-      5'h2 : begin
+      4'h2 : begin
         result = rs1 <<< opb;
       end 
       default: 
         illegal_instr = 1;
     endcase
-  }
+  end
 end
 
 always begin

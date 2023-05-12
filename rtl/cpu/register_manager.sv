@@ -19,11 +19,9 @@ module register_manager
   output logic[1:0] unit_o,
   output logic[2:0] sub_unit_o,
   output logic[3:0] sel_o,
-  output logic imm_o,
   output logic[xlen-1:0] rs1_o,
   output logic[xlen-1:0] rs2_o,
   output logic[4:0] rd_o,
-  output logic[xlen-1:0] immediate_o,
   output logic[xlen-1:0] jal_res_o,
 
   input logic ok_i,
@@ -47,8 +45,8 @@ logic imm;
 logic[24:0] instruction;
 
 //pipeline signals
-logic[142:0] data_i;
-logic[142:0] data_o;
+logic[109:0] data_i;
+logic[109:0] data_o;
 logic data_valid;
 
 logic[xlen-1:0] rs1;
@@ -119,7 +117,7 @@ always_latch begin
   if(l_imm_v)
     immediate = {l_imm, 12'h0};
   else if(s_imm_v)
-    immediate =  {20'h0 , s_imm};
+    immediate =  {{20{s_imm[11]}} , s_imm};
 end
 
 register_file register_file
@@ -142,17 +140,20 @@ always_latch begin
     rs1 = instr_pc;
 end
 
+always_latch begin
+  if(imm)
+    rs2 = immediate;
+end
+
 // push data on the pipeline
 always begin
   data_i = {
             unit,
             sub_unit,
             sel,
-            imm,
             rs1, 
             rs2, 
             rd,
-            immediate,
             jal_res_i};
 end
 
@@ -174,11 +175,9 @@ always begin
     unit_o,
     sub_unit_o,
     sel_o,
-    imm_o,
     rs1_o,
     rs2_o,
     rd_o,
-    immediate_o,
     jal_res_o
   } = data_o;
 end

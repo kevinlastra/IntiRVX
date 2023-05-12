@@ -30,7 +30,6 @@ module cpu
 
   logic data_valid_pg2r;
   logic[39:0] data_pg2r;
-  logic ok_r2p;
   logic[xlen-1:0] instr_pc;  
   logic[xlen-1:0] jal_res_i;
   logic[xlen-1:0] jal_res_o;
@@ -53,8 +52,12 @@ module cpu
   logic[xlen-1:0] rs1;
   logic[xlen-1:0] rs2;
   logic[4:0] rd;
-  logic[xlen-1:0] immediate_o;
-  logic imm_o; 
+  logic ok_r2p;
+
+  // ALU
+  logic ok_alu2r;
+  logic[xlen-1:0] alu_result;
+  logic alu_branch;
 
   // instruction fetch Unit
   ifetch ifetch
@@ -110,16 +113,29 @@ module cpu
     .unit_o(unit_o),
     .sub_unit_o(sub_unit_o),
     .sel_o(sel_o),
-    .imm_o(imm_o),
     .rs1_o(rs1),
     .rs2_o(rs2),
     .rd_o(rd),
-    .immediate_o(immediate_o),
     .jal_res_o(jal_res_o),
     .ok_i(1),
     .res_data(32'h0),
     .res_adr(5'h0),
     .res_v(0)
+  );
+
+  alu alu
+  (
+    .clk(clk),
+    .rst_n(rst_n),
+    .ok_o(ok_alu2r),
+    .unit(unit_o),
+    .sub_unit(sub_unit_o),
+    .sel(sel_o),
+    .rs1(rs1),
+    .rs2(rs2),
+    .rd(rd),
+    .result(alu_result),
+    .branch(alu_branch)
   );
 
 
