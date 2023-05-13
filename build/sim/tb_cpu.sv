@@ -78,7 +78,10 @@ module tb_cpu
 
 
   always begin
-    if(cpu.pc_gen.pc == )
+    if(cpu.mem.req_adr == 'h0 && cpu.mem.w_v) begin
+      $display("Program exit with status %d", cpu.register_manager.register_file.register[10]);
+      $finish();
+    end
   end
 
 

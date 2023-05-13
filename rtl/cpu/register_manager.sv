@@ -10,9 +10,10 @@ module register_manager
   input logic rst_n,
 
   // pc_gen interface
-  input logic[39:0] data,
+  input logic[14:0] decode,
+  input logic[24:0] instruction,
+  input logic[xlen-1:0] pc,
   output logic ok_o,
-  input logic[xlen-1:0] instr_pc,
   input logic[xlen-1:0] jal_res_i,
   
   // calculations units interface
@@ -26,6 +27,7 @@ module register_manager
   output logic[xlen-1:0] immediate_o,
   output logic[xlen-1:0] jal_res_o,
 
+  input logic flush,
   input logic ok_i,
 
   // Answer from the calculation units
@@ -44,12 +46,9 @@ logic[2:0] sub_unit;
 logic[3:0] sel;
 logic imm;
 
-logic[24:0] instruction;
-
 //pipeline signals
 logic[142:0] data_i;
 logic[142:0] data_o;
-logic data_valid;
 
 logic[xlen-1:0] rs1;
 logic rs1_v;
@@ -67,11 +66,10 @@ logic l_imm_v;
 logic pc_instruction;
 
 always begin
-  instruction = data[24:0];
-  unit = data[39:38];
-  sub_unit = data[37:35];
-  sel = data[34:31];
-  imm = data[30];
+  unit = decode[14:13];
+  sub_unit = decode[12:10];
+  sel = decode[9:6];
+  imm = decode[5];
 end
 
 always begin
@@ -83,7 +81,7 @@ always begin
     s_imm = {instruction[24:18], instruction[4:0]};
   else
     s_imm = instruction[24:13];
-    
+
   l_imm = instruction[24:5];
 
   pc_instruction = (unit == 2'h0) && (sub_unit == 3'h0); 
@@ -142,7 +140,7 @@ register_file register_file
 
 always_latch begin
   if(pc_instruction)
-    rs1 = instr_pc;
+    rs1 = pc;
 end
 
 // push data on the pipeline
@@ -165,8 +163,7 @@ fifo #(.DATA_SIZE($bits(data_i))) pipeline_r2c
   .rst_n(rst_n),
   .data_i(data_i),
   .valide(1),
-  .flush(0),
-  .data_valid(data_valid),
+  .flush(flush),
   .data_o(data_o),
   .ok(ok_i)
 );

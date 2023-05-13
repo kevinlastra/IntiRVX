@@ -15,7 +15,6 @@ module fifo
   input logic flush,
 
   // output
-  output logic data_valid,
   output logic[DATA_SIZE-1:0] data_o,
   input logic ok
 );
@@ -34,11 +33,10 @@ end
 
 always begin
   if(flush) begin
-    data_valid = 0;
+    data = 'h0;    // bubble
   end else if(valide) begin
-    data_valid = 1;
+    data = data_i;
   end
-  data = data_i;
 end
 
 endmodule

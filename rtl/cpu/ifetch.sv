@@ -13,7 +13,6 @@ module ifetch
   input logic[xlen-1:0] resp,
 
 	// Pc_gen interface
-  output logic data_valid,
 	output logic[xlen-1:0] data,
   input logic ok,
 
@@ -21,24 +20,38 @@ module ifetch
   input logic[xlen-1:0] target,
   input logic flush
 );
+
 parameter xlen = 32;
+
+logic[31:0] data_i;
+logic[31:0] data_o;
 
 
 always begin
   target_address = target;
 end
 
+always begin
+  data_i = {resp};
+end
 
-fifo #(.DATA_SIZE(xlen)) pipeline_f2d
+fifo #(.DATA_SIZE($bits(data_i))) pipeline_f2d
 (
   .clk(clk),
   .rst_n(rst_n),
-  .data_i(resp),
+  .data_i(data_i),
   .valide(1),
-  .flush(flush),
-  .data_valid(data_valid),
-  .data_o(data),
+  .flush(0),
+  .data_o(data_o),
   .ok(ok)
 );
+
+always begin
+  {
+    data
+  } = data_o;
+end
+
+
 
 endmodule

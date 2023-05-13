@@ -30,13 +30,12 @@ module cpu
 
   // ifetch
   logic[xlen-1:0] data_f2d;
-  logic data_valid_f2d;
-
+  logic instruction_flushed;
   // pc_gen
   logic ok_d2f;
 
-  logic data_valid_pg2r;
-  logic[39:0] data_pg2r;
+  logic[14:0] decode_pg2r;
+  logic[24:0] instruction_pg2r;
   logic[xlen-1:0] instr_pc;  
   logic[xlen-1:0] jal_res_i;
   logic[xlen-1:0] jal_res_o;
@@ -48,7 +47,7 @@ module cpu
 
   logic jal_instr_pcc;
 
-  logic flush_if;
+  logic flush;
 
   // Register manager
   logic data_valid_rm2c;
@@ -61,12 +60,14 @@ module cpu
   logic[4:0] rd;
   logic imm_o;
   logic[xlen-1:0] immediate_o;
+
   logic ok_r2p;
 
   // ALU
   logic alu_result_v;
   logic[xlen-1:0] alu_result;
-  logic alu_branch;
+  logic alu_target_v;
+  logic[xlen-1:0] alu_target;
   logic[4:0] alu_rd;
 
   logic ok_alu2r;
@@ -94,28 +95,28 @@ module cpu
     .rst_n(rst_n),
     .target_address(adr_instruction),
     .resp(resp_instruction),
-    .data_valid(data_valid_f2d),
     .data(data_f2d),
     .ok(ok_d2f),
     .target(target),
-    .flush(flush_if)
+    .flush(flush)
   );
 
   pc_gen pc_gen
   (
     .clk(clk),
     .rst_n(rst_n),
-    .instr_valide(data_valid_f2d),
     .instruction(data_f2d),
     .ok_o(ok_d2f),
-    .data_valid(data_valid_pg2r),
-    .data(data_pg2r),
+    .decode_o(decode_pg2r),
+    .instruction_o(instruction_pg2r),
+    .pc_o(instr_pc),
     .ok_i(ok_r2p),
-    .instr_pc(instr_pc),
     .next_pc_valide(pg_target_valide),
     .next_pc(pg_target),
     .jal_instr(jal_instr_pcc),
-    .jal_res(jal_res_i)
+    .jal_res(jal_res_i),
+    .flush(flush),
+    .alu_pc(alu_target)
   );
 
   pc_control pc_control
@@ -126,17 +127,19 @@ module cpu
     .pg_target_valide(pg_target_valide),
     .pg_target(pg_target),
     .jal(jal_instr_pcc),
-    .flush_if(flush_if),
-    .alu_target_valide(0)
+    .flush(flush),
+    .alu_target_valide(alu_target_v),
+    .alu_target(alu_target)
   );
 
   register_manager register_manager
   (
     .clk(clk),
     .rst_n(rst_n),
-    .data(data_pg2r),
     .ok_o(ok_r2p),
-    .instr_pc(instr_pc),
+    .decode(decode_pg2r),
+    .instruction(instruction_pg2r),
+    .pc(instr_pc),
     .jal_res_i(jal_res_i),
     .unit_o(unit_o),
     .sub_unit_o(sub_unit_o),
@@ -147,6 +150,7 @@ module cpu
     .imm_o(imm_o),
     .immediate_o(immediate_o),
     .jal_res_o(jal_res_o),
+    .flush(flush),
     .ok_i(1),
     .res_data(wb_res),
     .res_adr(wb_rd),
@@ -166,10 +170,12 @@ module cpu
     .rd_i(rd),
     .immediate(immediate_o),
     .imm(imm_o),
-    .result_v(alu_result_v),
+    .result_valid(alu_result_v),
     .result(alu_result),
     .rd_o(alu_rd),
-    .branch(alu_branch),
+    .target(alu_target),
+    .target_valid(alu_target_v),
+    .flush(flush),
     .ok_i(ok_wb2alu)
   );
 

@@ -18,6 +18,8 @@ asm
   "__exit:\n"
   "nop\n"
   "nop\n"
+  "sw x0, 0(x0)\n"
+  "nop\n"
   "nop\n"
   "nop\n"
 );

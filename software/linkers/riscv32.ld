@@ -13,7 +13,7 @@ SECTIONS
       *(.text)
       KEEP(*(.stack))
     }
-    . = 0x20000000;
+    . = 0x20000;
     .data : 
     { 
       *(.data*) 

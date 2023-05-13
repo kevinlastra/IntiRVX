@@ -9,21 +9,22 @@ module pc_gen
   input logic rst_n,
 
   // Ifetch interface
-  input logic instr_valide,
   input logic[xlen-1:0] instruction,
   output logic ok_o,
 
   // Register interface
-  output logic data_valid,
-  output logic[39:0] data,
+  output logic[14:0] decode_o,
+  output logic[24:0] instruction_o,
+  output logic[xlen-1:0] pc_o,
   input logic ok_i,
-  output logic[xlen-1:0] instr_pc,
   output logic[xlen-1:0] jal_res,
 
   // PC control interface
   output logic next_pc_valide,
   output logic[xlen-1:0] next_pc,
-  output logic jal_instr
+  output logic jal_instr,
+  input logic flush,
+  input logic[xlen-1:0] alu_pc
   );
 
 // PARAMETERS
@@ -38,7 +39,8 @@ logic[24:0] reg_imm_parse_instr;
 
 logic[31:0] jal_imm;
 
-logic[39:0] data_i;
+logic[71:0] data_i;
+logic[71:0] data_o;
 
 logic[xlen-1:0] start_address = 'h0;
 
@@ -75,13 +77,13 @@ always begin
         next_pc = start_address;
       end 
       NEXT : begin
-        if(instr_valide) begin
-          if (jal_instr) begin
-            jal_imm = {{12{instruction[31]}}, instruction[19:12], instruction[20], instruction[30:21], 1'b0};
-            next_pc = pc + jal_imm;
-          end else begin
-            next_pc = pc + 4;
-          end
+        if(flush) begin
+          next_pc = alu_pc;
+        end else if (jal_instr) begin
+          jal_imm = {{12{instruction[31]}}, instruction[19:12], instruction[20], instruction[30:21], 1'b0};
+          next_pc = pc + jal_imm;
+        end else begin
+          next_pc = pc + 4;
         end
       end
     endcase
@@ -100,7 +102,6 @@ end
     
 always @(posedge clk) begin
   if(rst_n)begin
-    instr_pc <= pc;
     pc <= next_pc;
     jal_res <= next_pc;
   end
@@ -108,7 +109,9 @@ end
 
 
 always begin
-  data_i = {decode, reg_imm_parse_instr};
+  data_i = {decode, 
+            reg_imm_parse_instr, 
+            pc};
 end
 
 fifo #(.DATA_SIZE($bits(data_i))) pipeline_pg2r
@@ -117,11 +120,16 @@ fifo #(.DATA_SIZE($bits(data_i))) pipeline_pg2r
   .rst_n(rst_n),
   .data_i(data_i),
   .valide(1),
-  .flush(0),
-  .data_valid(data_valid),
-  .data_o(data),
+  .flush(flush),
+  .data_o(data_o),
   .ok(ok_i)
 );
+
+always begin
+  {decode_o, 
+   instruction_o, 
+   pc_o} = data_o;
+end
 
 always begin
   next_pc_valide = ok_i;

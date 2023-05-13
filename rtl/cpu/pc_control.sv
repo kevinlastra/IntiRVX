@@ -14,17 +14,21 @@ module pc_control
   input logic[xlen-1:0] pg_target,
   input logic jal,
   
-  output logic flush_if,
+  output logic flush,
+
   // ALU interface
-  input logic alu_target_valide
+  input logic alu_target_valide,
+  input logic[xlen-1:0] alu_target
 );
+
 parameter xlen = 32;
 
 
 always begin
-  flush_if = 0;
+  flush = 0;
   if(alu_target_valide) begin
-    // flush I2PG, PG2R and R2Calc pipelines
+    target = alu_target;
+    flush = 1;
   end else if (pg_target_valide) begin
     target = pg_target;
   end

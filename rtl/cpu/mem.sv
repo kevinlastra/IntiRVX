@@ -45,7 +45,6 @@ parameter xlen = 32;
 logic[xlen+5:0] data_i;
 logic[xlen+5:0] data_o;
 
-logic data_valid;
 
 logic IDLE = 1'h0;
 logic READ = 1'h1;
@@ -88,6 +87,7 @@ always begin
 end
 
 always begin
+  mem_result_v = 0;
 	case (state_c)
 		IDLE : begin
 			if(ok_o) begin
@@ -152,7 +152,6 @@ fifo #(.DATA_SIZE($bits(data_i))) pipeline_pg2r
   .data_i(data_i),
   .valide(1),
   .flush(0),
-  .data_valid(data_valid),
   .data_o(data_o),
   .ok(ok_i)
 );
