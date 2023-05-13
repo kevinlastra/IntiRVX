@@ -117,7 +117,10 @@ end
 
 always_latch begin
   if(l_imm_v)
-    immediate = {l_imm, 12'h0};
+    if(sel != 4'h2)
+      immediate = {l_imm, 12'h0};
+    else
+      immediate = {{12{instruction[24]}}, instruction[12:5], instruction[13], instruction[23:14], 1'b0};
   else if(s_imm_v)
     immediate =  {{20{s_imm[11]}} , s_imm};
 end

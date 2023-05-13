@@ -67,6 +67,7 @@ module cpu
   logic alu_result_v;
   logic[xlen-1:0] alu_result;
   logic alu_branch;
+  logic[4:0] alu_rd;
 
   logic ok_alu2r;
 
@@ -74,7 +75,17 @@ module cpu
   logic mem_result_v;
   logic[xlen-1:0] mem_result;
 
+  logic[4:0] mem_rd;
+
   logic ok_mem2r;
+
+  // Write back
+  logic ok_wb2alu;
+  logic ok_wb2mem;
+
+  logic[xlen-1:0] wb_res;
+  logic wb_res_v;
+  logic[4:0] wb_rd;
 
   // instruction fetch Unit
   ifetch ifetch
@@ -137,9 +148,9 @@ module cpu
     .immediate_o(immediate_o),
     .jal_res_o(jal_res_o),
     .ok_i(1),
-    .res_data(32'h0),
-    .res_adr(5'h0),
-    .res_v(0)
+    .res_data(wb_res),
+    .res_adr(wb_rd),
+    .res_v(wb_res_v)
   );
 
   alu alu
@@ -152,12 +163,14 @@ module cpu
     .sel(sel_o),
     .rs1(rs1),
     .rs2(rs2),
-    .rd(rd),
+    .rd_i(rd),
     .immediate(immediate_o),
     .imm(imm_o),
     .result_v(alu_result_v),
     .result(alu_result),
-    .branch(alu_branch)
+    .rd_o(alu_rd),
+    .branch(alu_branch),
+    .ok_i(ok_wb2alu)
   );
 
   mem mem
@@ -170,7 +183,7 @@ module cpu
     .sel(sel_o),
     .rs1(rs1),
     .rs2(rs2),
-    .rd(rd),
+    .rd_i(rd),
     .immediate(immediate_o),
     .imm(imm_o),
     .r_v(r_v),
@@ -181,8 +194,26 @@ module cpu
     .hit(dmem_resp_v),
     .mem_res(dmem_resp[15:0]),
     .result(mem_result),
-    .result_v(mem_result_v)
+    .rd_o(mem_rd),
+    .result_v(mem_result_v),
+    .ok_i(ok_wb2mem)
   );
 
+  write_back write_back
+  (
+    .clk(clk),
+    .rst_n(rst_n),
+    .alu_res(alu_result),
+    .alu_rd(alu_rd),
+    .alu_res_v(alu_result_v),
+    .alu_ok(ok_wb2alu),
+    .mem_res(mem_result),
+    .mem_rd(mem_rd),
+    .mem_res_v(mem_result_v),
+    .mem_ok(ok_wb2mem),
+    .result(wb_res),
+    .rd(wb_rd),
+    .result_v(wb_res_v)
+  );
 
 endmodule

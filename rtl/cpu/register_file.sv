@@ -38,7 +38,7 @@ end
 
 always @(negedge clk) begin
   if(w_valid) begin
-    register[w_ad] = w_data;
+    register[w_ad] <= w_data;
   end
 end
 

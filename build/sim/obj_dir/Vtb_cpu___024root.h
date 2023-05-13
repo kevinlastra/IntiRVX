@@ -23,8 +23,8 @@ class Vtb_cpu___024root final : public VerilatedModule {
         CData/*3:0*/ tb_cpu__DOT__dmem_strobe;
         CData/*0:0*/ tb_cpu__DOT__dmem_resp_v;
         CData/*0:0*/ tb_cpu__DOT__cpu__DOT__data_valid_rm2c;
-        CData/*0:0*/ tb_cpu__DOT__cpu__DOT__alu_branch;
-        CData/*0:0*/ tb_cpu__DOT__cpu__DOT__mem_result_v;
+        CData/*0:0*/ tb_cpu__DOT__cpu__DOT__wb_res_v;
+        CData/*4:0*/ tb_cpu__DOT__cpu__DOT__wb_rd;
         CData/*0:0*/ tb_cpu__DOT__cpu__DOT__pc_gen__DOT__state_c;
         CData/*0:0*/ tb_cpu__DOT__cpu__DOT__pc_gen__DOT__init;
         CData/*1:0*/ tb_cpu__DOT__cpu__DOT__pc_gen__DOT__decoder__DOT__unit;
@@ -40,6 +40,7 @@ class Vtb_cpu___024root final : public VerilatedModule {
         CData/*0:0*/ tb_cpu__DOT__cpu__DOT__register_manager__DOT__rs2_v;
         CData/*0:0*/ tb_cpu__DOT__cpu__DOT__register_manager__DOT__s_imm_v;
         CData/*0:0*/ tb_cpu__DOT__cpu__DOT__register_manager__DOT__l_imm_v;
+        CData/*0:0*/ tb_cpu__DOT__cpu__DOT__alu__DOT__branch_v;
         CData/*0:0*/ tb_cpu__DOT__cpu__DOT__alu__DOT__eq;
         CData/*0:0*/ tb_cpu__DOT__cpu__DOT__alu__DOT__less_than;
         CData/*0:0*/ tb_cpu__DOT__cpu__DOT__alu__DOT__less_than_u;
@@ -50,6 +51,8 @@ class Vtb_cpu___024root final : public VerilatedModule {
         CData/*0:0*/ tb_cpu__DOT__cpu__DOT__mem__DOT__state_c;
         CData/*0:0*/ tb_cpu__DOT__cpu__DOT__mem__DOT__state_n;
         CData/*3:0*/ tb_cpu__DOT__cpu__DOT__mem__DOT__strobe;
+        CData/*0:0*/ tb_cpu__DOT__cpu__DOT__mem__DOT__mem_result_v;
+        CData/*1:0*/ tb_cpu__DOT__cpu__DOT__write_back__DOT__res_v;
         CData/*0:0*/ __Vtrigprevexpr___TOP__clk__0;
         CData/*0:0*/ __VactContinue;
         SData/*14:0*/ tb_cpu__DOT__cpu__DOT__pc_gen__DOT__decode;
@@ -62,9 +65,9 @@ class Vtb_cpu___024root final : public VerilatedModule {
         IData/*31:0*/ tb_cpu__DOT__cpu__DOT__instr_pc;
         IData/*31:0*/ tb_cpu__DOT__cpu__DOT__jal_res_i;
         IData/*31:0*/ tb_cpu__DOT__cpu__DOT__pg_target;
-        IData/*31:0*/ tb_cpu__DOT__cpu__DOT__alu_result;
-        IData/*31:0*/ tb_cpu__DOT__cpu__DOT__mem_result;
+        IData/*31:0*/ tb_cpu__DOT__cpu__DOT__wb_res;
         IData/*17:0*/ tb_cpu__DOT__cpu__DOT__pc_gen__DOT__decode_parse_instr;
+        IData/*31:0*/ tb_cpu__DOT__cpu__DOT__pc_gen__DOT__jal_imm;
         IData/*31:0*/ tb_cpu__DOT__cpu__DOT__pc_gen__DOT__pc;
         VlWide<5>/*142:0*/ tb_cpu__DOT__cpu__DOT__register_manager__DOT__data_o;
         IData/*31:0*/ tb_cpu__DOT__cpu__DOT__register_manager__DOT__rs1;
@@ -72,15 +75,19 @@ class Vtb_cpu___024root final : public VerilatedModule {
         IData/*31:0*/ tb_cpu__DOT__cpu__DOT__register_manager__DOT__immediate;
         IData/*31:0*/ tb_cpu__DOT__cpu__DOT__alu__DOT__opb;
         IData/*31:0*/ tb_cpu__DOT__cpu__DOT__alu__DOT__alu_res;
+        IData/*31:0*/ tb_cpu__DOT__cpu__DOT__alu__DOT__res;
         IData/*31:0*/ tb_cpu__DOT__cpu__DOT__mem__DOT__adr;
+        IData/*31:0*/ tb_cpu__DOT__cpu__DOT__mem__DOT__mem_result;
         IData/*31:0*/ __VstlIterCount;
+    };
+    struct {
         IData/*31:0*/ __VicoIterCount;
         IData/*31:0*/ __VactIterCount;
         QData/*39:0*/ tb_cpu__DOT__cpu__DOT__data_pg2r;
+        QData/*38:0*/ tb_cpu__DOT__cpu__DOT__alu__DOT__data_o;
+        QData/*37:0*/ tb_cpu__DOT__cpu__DOT__mem__DOT__data_o;
         VlUnpacked<IData/*31:0*/, 32> tb_cpu__DOT__cpu__DOT__register_manager__DOT__register_file__DOT__register;
         VlUnpacked<CData/*7:0*/, 1024> tb_cpu__DOT__imem__DOT__mem;
-    };
-    struct {
         VlUnpacked<CData/*7:0*/, 1024> tb_cpu__DOT__dmem__DOT__mem;
         VlUnpacked<CData/*0:0*/, 4> __Vm_traceActivity;
     };

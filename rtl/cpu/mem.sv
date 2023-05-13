@@ -17,7 +17,7 @@ module mem
 
 	input logic[xlen-1:0] rs1,
 	input logic[xlen-1:0] rs2,
-	input logic[4:0] rd,
+	input logic[4:0] rd_i,
 
 	input logic[xlen-1:0] immediate,
   input logic imm,
@@ -32,12 +32,20 @@ module mem
 	input logic hit,
 	input logic[15:0] mem_res,
 
-	// Result Output
+	// Write back interface
 	output logic[xlen-1:0] result,
-	output logic result_v
+	output logic[4:0] rd_o,
+	output logic result_v,
+	
+	input logic ok_i
 );
 
 parameter xlen = 32;
+
+logic[xlen+5:0] data_i;
+logic[xlen+5:0] data_o;
+
+logic data_valid;
 
 logic IDLE = 1'h0;
 logic READ = 1'h1;
@@ -48,6 +56,9 @@ logic state_n;
 logic[xlen-1:0] adr;
 logic[3:0] strobe;
 logic sign_ext;
+
+logic[xlen-1:0] mem_result;
+logic mem_result_v;
 
 always begin
 	adr = rs1 + immediate;	
@@ -79,18 +90,20 @@ end
 always begin
 	case (state_c)
 		IDLE : begin
-			req_adr = adr;
-			req_strobe = strobe;
-			req_data = rs2;
-			r_v = sub_unit == 3'h0;
-			w_v = sub_unit == 3'h1;
+			if(ok_o) begin
+				req_adr = adr;
+				req_strobe = strobe;
+				req_data = rs2;
+				r_v = sub_unit == 3'h0;
+				w_v = sub_unit == 3'h1;
+			end
 		end
 		READ : begin
 			if(sign_ext)
-				result = {{16{mem_res[15]}}, mem_res};
+				mem_result = {{16{mem_res[15]}}, mem_res};
 			else
-				result = {{16{1'b0}}, mem_res};
-			result_v = hit;
+				mem_result = {{16{1'b0}}, mem_res};
+			mem_result_v = hit;
 		end
 	endcase
 end
@@ -98,10 +111,12 @@ end
 always begin
 	case (state_c)
 		IDLE : begin 
-			if(sub_unit == 3'h0) begin
-				state_n = READ;
-			end else begin 
-				state_n = IDLE;
+			if(ok_o) begin
+				if(sub_unit == 3'h0) begin
+					state_n = READ;
+				end else begin 
+					state_n = IDLE;
+				end
 			end
 		end
 		READ : begin
@@ -119,6 +134,35 @@ always @(posedge clk) begin
 	end else begin
 		state_c <= IDLE;
 	end
+end
+
+always begin
+	data_i = 
+	{
+		mem_result,
+		rd_i,
+		mem_result_v
+	};
+end
+
+fifo #(.DATA_SIZE($bits(data_i))) pipeline_pg2r
+(
+  .clk(clk),
+  .rst_n(rst_n),
+  .data_i(data_i),
+  .valide(1),
+  .flush(0),
+  .data_valid(data_valid),
+  .data_o(data_o),
+  .ok(ok_i)
+);
+
+always begin
+	{
+		result,
+		rd_o,
+		result_v
+	} = data_o;
 end
 
 always begin

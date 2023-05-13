@@ -18,20 +18,33 @@ module alu
 
   input logic[xlen-1:0] rs1,
   input logic[xlen-1:0] rs2,
-  input logic[4:0] rd,
+  input logic[4:0] rd_i,
 
   input logic[xlen-1:0] immediate,
   input logic imm,
-  // Result Output
+
+  // Write back interface
   output logic result_v,
   output logic[xlen-1:0] result,
-  output logic branch
+  output logic[4:0] rd_o,
+  output logic branch,
+
+  input logic ok_i
 );
 
 parameter xlen = 32;
 
 logic[xlen-1:0] opb;
 logic[xlen-1:0] alu_res;
+
+logic res_v;
+logic branch_v;
+logic[xlen-1:0] res;
+
+logic[xlen+6:0] data_i;
+logic[xlen+6:0] data_o;
+
+logic data_valid;
 
 logic eq;
 logic less_than;
@@ -68,16 +81,16 @@ always begin
   if(sub_unit == 3'h0) begin
     case (sel)
       4'h00: begin
-        result = rs2;
+        res = rs2;
       end
       4'h01: begin
-        result = alu_res;
+        res = alu_res;
       end
       4'h02: begin
-        result = alu_res + 4;
+        res = alu_res + 4;
       end 
       4'h03: begin
-        result = alu_res;
+        res = alu_res;
       end
       default: 
       illegal_instr = 1;
@@ -85,49 +98,49 @@ always begin
   end else if(sub_unit == 3'h1) begin
     case (sel)
       4'h0: begin
-        branch = alu_res == 0;
+        branch_v = alu_res == 0;
       end
       4'h1: begin
-        branch = alu_res != 0;
+        branch_v = alu_res != 0;
       end
       4'h2: begin
-        branch = diff? rs1[31]: alu_res[31];
+        branch_v = diff? rs1[31]: alu_res[31];
       end
       4'h3: begin
-        branch = diff? rs2[31]: !alu_res[31];
+        branch_v = diff? rs2[31]: !alu_res[31];
       end
       4'h4: begin
-        branch = diff? rs2[31]: alu_res[31];
+        branch_v = diff? rs2[31]: alu_res[31];
       end
       4'h5: begin
-        branch = diff? rs1[31]: !alu_res[31];
+        branch_v = diff? rs1[31]: !alu_res[31];
       end
       default: 
         illegal_instr = 1;
     endcase
 
-    if(branch) begin
-      result = rs2;
+    if(branch_v) begin
+      res = rs2;
     end
     
   end else if(sub_unit == 3'h2) begin
-    result = alu_res;
+    res = alu_res;
   end else if(sub_unit == 3'h3) begin
     case (sel)
       4'h0 : begin
-        result = {{xlen-1{1'b0}}, diff? rs1[31]: alu_res[31]};
+        res = {{xlen-1{1'b0}}, diff? rs1[31]: alu_res[31]};
       end
       4'h1 : begin
-        result = {{xlen-1{1'b0}}, diff? rs2[31]: alu_res[31]};
+        res = {{xlen-1{1'b0}}, diff? rs2[31]: alu_res[31]};
       end
       4'h2 : begin
-        result = rs1 ^ opb;
+        res = rs1 ^ opb;
       end
       4'h3 : begin
-        result = rs1 | opb;
+        res = rs1 | opb;
       end 
       4'h4 : begin
-        result = rs1 & opb;
+        res = rs1 & opb;
       end
       default: 
       illegal_instr = 1;
@@ -135,13 +148,13 @@ always begin
   end else if(sub_unit == 3'h4) begin
     case (sel)
       4'h0 : begin
-        result = rs1 << opb;
+        res = rs1 << opb;
       end
       4'h1 : begin
-        result = rs1 >> opb;
+        res = rs1 >> opb;
       end
       4'h2 : begin
-        result = rs1 <<< opb;
+        res = rs1 <<< opb;
       end 
       default: 
         illegal_instr = 1;
@@ -150,7 +163,39 @@ always begin
 end
 
 always begin
-  result_v = ~illegal_instr;
+  res_v = ~illegal_instr;
+end
+
+
+always begin
+  data_i = 
+  {
+    branch_v,
+    res_v,
+    rd_i,
+    res
+  };
+end
+
+fifo #(.DATA_SIZE($bits(data_i))) pipeline_alu2wb
+(
+  .clk(clk),
+  .rst_n(rst_n),
+  .data_i(data_i),
+  .valide(1),
+  .flush(0),
+  .data_valid(data_valid),
+  .data_o(data_o),
+  .ok(ok_i)
+);
+
+always begin
+  {
+    branch,
+    result_v,
+    rd_o,
+    result
+  } = data_o;
 end
 
 always begin

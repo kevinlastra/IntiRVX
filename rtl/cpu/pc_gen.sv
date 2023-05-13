@@ -36,6 +36,8 @@ logic[14:0] decode;
 logic[17:0] decode_parse_instr;
 logic[24:0] reg_imm_parse_instr;
 
+logic[31:0] jal_imm;
+
 logic[39:0] data_i;
 
 logic[xlen-1:0] start_address = 'h0;
@@ -61,11 +63,12 @@ decoder_PG decoder
 );
 
 always begin 
-  jal_instr = decode == 'h0100;
+  jal_instr = decode == 'b00000010100000;
 end
 
 // calc new address
 always begin
+  jal_imm = 'h0;
   if(rst_n) begin
     case (state_c)
       INIT : begin
@@ -74,7 +77,8 @@ always begin
       NEXT : begin
         if(instr_valide) begin
           if (jal_instr) begin
-            next_pc = pc + {{11{instruction[31]}}, instruction[19:12], instruction[11], instruction[30:21], 1'b0};
+            jal_imm = {{12{instruction[31]}}, instruction[19:12], instruction[20], instruction[30:21], 1'b0};
+            next_pc = pc + jal_imm;
           end else begin
             next_pc = pc + 4;
           end

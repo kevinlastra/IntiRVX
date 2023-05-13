@@ -77,4 +77,9 @@ module tb_cpu
   end
 
 
+  always begin
+    if(cpu.pc_gen.pc == )
+  end
+
+
 endmodule

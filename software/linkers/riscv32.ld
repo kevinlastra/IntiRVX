@@ -1,6 +1,8 @@
 
+__stack_size = 0x2000;
 
-ENTRY (_start)
+
+ENTRY (__start)
 
 
 SECTIONS
@@ -9,14 +11,23 @@ SECTIONS
     .text : 
     { 
       *(.text)
+      KEEP(*(.stack))
     }
     . = 0x20000000;
     .data : 
     { 
-      *(.data) 
+      *(.data*) 
     }
-    .bss : 
+    .bss (NOLOAD) : 
     { 
-      *(.bss) 
+      *(.bss*)
+      *(COMMON) 
+    }
+    .stack (NOLOAD) : 
+    {
+      . = ALIGN(8);
+      __stack_top = .;
+      . = . + __stack_size;
+      . = ALIGN(8);
     }
 }
