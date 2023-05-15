@@ -99,8 +99,8 @@ VL_MODULE(Vtb_cpu) {
     struct {
         QData/*37:0*/ tb_cpu__DOT__cpu__DOT__mem__DOT__data_o;
         IData/*31:0*/ tb_cpu__DOT__cpu__DOT__register_manager__DOT__register_file__DOT__register[32];
-        CData/*7:0*/ tb_cpu__DOT__imem__DOT__mem[1024];
-        CData/*7:0*/ tb_cpu__DOT__dmem__DOT__mem[1024];
+        CData/*7:0*/ tb_cpu__DOT__imem__DOT__mem[4096];
+        CData/*7:0*/ tb_cpu__DOT__dmem__DOT__mem[4096];
     };
     
     // LOCAL VARIABLES

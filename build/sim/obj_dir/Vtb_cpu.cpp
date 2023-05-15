@@ -80,10 +80,10 @@ VL_INLINE_OPT void Vtb_cpu::_sequent__TOP__1(Vtb_cpu__Syms* __restrict vlSymsp) 
     CData/*0:0*/ __Vdlyvset__tb_cpu__DOT__dmem__DOT__mem__v2;
     CData/*7:0*/ __Vdlyvval__tb_cpu__DOT__dmem__DOT__mem__v3;
     CData/*0:0*/ __Vdlyvset__tb_cpu__DOT__dmem__DOT__mem__v3;
-    SData/*9:0*/ __Vdlyvdim0__tb_cpu__DOT__dmem__DOT__mem__v0;
-    SData/*9:0*/ __Vdlyvdim0__tb_cpu__DOT__dmem__DOT__mem__v1;
-    SData/*9:0*/ __Vdlyvdim0__tb_cpu__DOT__dmem__DOT__mem__v2;
-    SData/*9:0*/ __Vdlyvdim0__tb_cpu__DOT__dmem__DOT__mem__v3;
+    SData/*11:0*/ __Vdlyvdim0__tb_cpu__DOT__dmem__DOT__mem__v0;
+    SData/*11:0*/ __Vdlyvdim0__tb_cpu__DOT__dmem__DOT__mem__v1;
+    SData/*11:0*/ __Vdlyvdim0__tb_cpu__DOT__dmem__DOT__mem__v2;
+    SData/*11:0*/ __Vdlyvdim0__tb_cpu__DOT__dmem__DOT__mem__v3;
     IData/*31:0*/ __Vdlyvval__tb_cpu__DOT__cpu__DOT__register_manager__DOT__register_file__DOT__register__v0;
     // Body
     __Vdlyvset__tb_cpu__DOT__cpu__DOT__register_manager__DOT__register_file__DOT__register__v0 = 0U;
@@ -99,22 +99,22 @@ VL_INLINE_OPT void Vtb_cpu::_sequent__TOP__1(Vtb_cpu__Syms* __restrict vlSymsp) 
     }
     if (((IData)(vlTOPp->rst_n) & (IData)(vlTOPp->tb_cpu__DOT__dmem_r_v))) {
         vlTOPp->tb_cpu__DOT__dmem_resp = ((vlTOPp->tb_cpu__DOT__dmem__DOT__mem
-                                           [(0x3ffU 
+                                           [(0xfffU 
                                              & ((IData)(3U) 
                                                 + vlTOPp->tb_cpu__DOT__dmem_data_adr))] 
                                            << 0x18U) 
                                           | ((vlTOPp->tb_cpu__DOT__dmem__DOT__mem
-                                              [(0x3ffU 
+                                              [(0xfffU 
                                                 & ((IData)(2U) 
                                                    + vlTOPp->tb_cpu__DOT__dmem_data_adr))] 
                                               << 0x10U) 
                                              | ((vlTOPp->tb_cpu__DOT__dmem__DOT__mem
-                                                 [(0x3ffU 
+                                                 [(0xfffU 
                                                    & ((IData)(1U) 
                                                       + vlTOPp->tb_cpu__DOT__dmem_data_adr))] 
                                                  << 8U) 
                                                 | vlTOPp->tb_cpu__DOT__dmem__DOT__mem
-                                                [(0x3ffU 
+                                                [(0xfffU 
                                                   & vlTOPp->tb_cpu__DOT__dmem_data_adr)])));
     }
     if (vlTOPp->tb_cpu__DOT__cpu__DOT__wb_res_v) {
@@ -126,7 +126,7 @@ VL_INLINE_OPT void Vtb_cpu::_sequent__TOP__1(Vtb_cpu__Syms* __restrict vlSymsp) 
     }
     if (vlTOPp->rst_n) {
         vlTOPp->tb_cpu__DOT__imem_resp = ((vlTOPp->tb_cpu__DOT__imem__DOT__mem
-                                           [(0x3ffU 
+                                           [(0xfffU 
                                              & ((IData)(3U) 
                                                 + (
                                                    (0x40U 
@@ -136,7 +136,7 @@ VL_INLINE_OPT void Vtb_cpu::_sequent__TOP__1(Vtb_cpu__Syms* __restrict vlSymsp) 
                                                     : vlTOPp->tb_cpu__DOT__cpu__DOT__pg_target)))] 
                                            << 0x18U) 
                                           | ((vlTOPp->tb_cpu__DOT__imem__DOT__mem
-                                              [(0x3ffU 
+                                              [(0xfffU 
                                                 & ((IData)(2U) 
                                                    + 
                                                    ((0x40U 
@@ -146,7 +146,7 @@ VL_INLINE_OPT void Vtb_cpu::_sequent__TOP__1(Vtb_cpu__Syms* __restrict vlSymsp) 
                                                      : vlTOPp->tb_cpu__DOT__cpu__DOT__pg_target)))] 
                                               << 0x10U) 
                                              | ((vlTOPp->tb_cpu__DOT__imem__DOT__mem
-                                                 [(0x3ffU 
+                                                 [(0xfffU 
                                                    & ((IData)(1U) 
                                                       + 
                                                       ((0x40U 
@@ -156,7 +156,7 @@ VL_INLINE_OPT void Vtb_cpu::_sequent__TOP__1(Vtb_cpu__Syms* __restrict vlSymsp) 
                                                         : vlTOPp->tb_cpu__DOT__cpu__DOT__pg_target)))] 
                                                  << 8U) 
                                                 | vlTOPp->tb_cpu__DOT__imem__DOT__mem
-                                                [(0x3ffU 
+                                                [(0xfffU 
                                                   & ((0x40U 
                                                       & vlTOPp->tb_cpu__DOT__cpu__DOT__alu__DOT__data_o[2U])
                                                       ? 
@@ -169,7 +169,7 @@ VL_INLINE_OPT void Vtb_cpu::_sequent__TOP__1(Vtb_cpu__Syms* __restrict vlSymsp) 
                 = (0xffU & vlTOPp->tb_cpu__DOT__dmem_data);
             __Vdlyvset__tb_cpu__DOT__dmem__DOT__mem__v0 = 1U;
             __Vdlyvdim0__tb_cpu__DOT__dmem__DOT__mem__v0 
-                = (0x3ffU & vlTOPp->tb_cpu__DOT__dmem_data_adr);
+                = (0xfffU & vlTOPp->tb_cpu__DOT__dmem_data_adr);
         }
         if ((2U & (IData)(vlTOPp->tb_cpu__DOT__dmem_strobe))) {
             __Vdlyvval__tb_cpu__DOT__dmem__DOT__mem__v1 
@@ -177,7 +177,7 @@ VL_INLINE_OPT void Vtb_cpu::_sequent__TOP__1(Vtb_cpu__Syms* __restrict vlSymsp) 
                             >> 8U));
             __Vdlyvset__tb_cpu__DOT__dmem__DOT__mem__v1 = 1U;
             __Vdlyvdim0__tb_cpu__DOT__dmem__DOT__mem__v1 
-                = (0x3ffU & vlTOPp->tb_cpu__DOT__dmem_data_adr);
+                = (0xfffU & vlTOPp->tb_cpu__DOT__dmem_data_adr);
         }
         if ((4U & (IData)(vlTOPp->tb_cpu__DOT__dmem_strobe))) {
             __Vdlyvval__tb_cpu__DOT__dmem__DOT__mem__v2 
@@ -185,7 +185,7 @@ VL_INLINE_OPT void Vtb_cpu::_sequent__TOP__1(Vtb_cpu__Syms* __restrict vlSymsp) 
                             >> 0x10U));
             __Vdlyvset__tb_cpu__DOT__dmem__DOT__mem__v2 = 1U;
             __Vdlyvdim0__tb_cpu__DOT__dmem__DOT__mem__v2 
-                = (0x3ffU & vlTOPp->tb_cpu__DOT__dmem_data_adr);
+                = (0xfffU & vlTOPp->tb_cpu__DOT__dmem_data_adr);
         }
         if ((8U & (IData)(vlTOPp->tb_cpu__DOT__dmem_strobe))) {
             __Vdlyvval__tb_cpu__DOT__dmem__DOT__mem__v3 
@@ -193,7 +193,7 @@ VL_INLINE_OPT void Vtb_cpu::_sequent__TOP__1(Vtb_cpu__Syms* __restrict vlSymsp) 
                             >> 0x18U));
             __Vdlyvset__tb_cpu__DOT__dmem__DOT__mem__v3 = 1U;
             __Vdlyvdim0__tb_cpu__DOT__dmem__DOT__mem__v3 
-                = (0x3ffU & vlTOPp->tb_cpu__DOT__dmem_data_adr);
+                = (0xfffU & vlTOPp->tb_cpu__DOT__dmem_data_adr);
         }
     }
     if (__Vdlyvset__tb_cpu__DOT__cpu__DOT__register_manager__DOT__register_file__DOT__register__v0) {
