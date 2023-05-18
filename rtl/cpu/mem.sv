@@ -150,12 +150,10 @@ fifo #(.DATA_SIZE($bits(data_i))) pipeline_pg2r
   .clk(clk),
   .rst_n(rst_n),
   .data_i(data_i),
-  .valide(1),
-  .flush(0),
-  .data_o(data_o),
-  .ok(ok_i)
+  .flush(0), //flush | !ok_o
+  .ok(ok_i),
+  .data_o(data_o)
 );
-
 always begin
 	{
 		result,

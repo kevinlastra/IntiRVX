@@ -34,7 +34,7 @@ module cpu
   // pc_gen
   logic ok_d2f;
 
-  logic[14:0] decode_pg2r;
+  logic[15:0] decode_pg2r;
   logic[24:0] instruction_pg2r;
   logic[xlen-1:0] instr_pc;  
   logic[xlen-1:0] jal_res_i;
@@ -49,6 +49,9 @@ module cpu
 
   logic flush;
 
+  logic j_instr_rm;
+  logic j_instr_alu;
+
   // Register manager
   logic data_valid_rm2c;
 
@@ -60,8 +63,9 @@ module cpu
   logic[4:0] rd;
   logic imm_o;
   logic[xlen-1:0] immediate_o;
-
+  logic[xlen-1:0] pc_rm2alu;
   logic ok_r2p;
+  logic j_instr2alu;
 
   // ALU
   logic alu_result_v;
@@ -128,6 +132,8 @@ module cpu
     .pg_target(pg_target),
     .jal(jal_instr_pcc),
     .flush(flush),
+    .j_instr_rm(j_instr_rm),
+    .j_instr_alu(j_instr_alu),
     .alu_target_valide(alu_target_v),
     .alu_target(alu_target)
   );
@@ -139,19 +145,22 @@ module cpu
     .ok_o(ok_r2p),
     .decode(decode_pg2r),
     .instruction(instruction_pg2r),
-    .pc(instr_pc),
+    .pc_i(instr_pc),
     .jal_res_i(jal_res_i),
     .unit_o(unit_o),
     .sub_unit_o(sub_unit_o),
     .sel_o(sel_o),
+    .pc_o(pc_rm2alu),
     .rs1_o(rs1),
     .rs2_o(rs2),
     .rd_o(rd),
     .imm_o(imm_o),
     .immediate_o(immediate_o),
     .jal_res_o(jal_res_o),
+    .j_instr2alu(j_instr2alu),
     .flush(flush),
-    .ok_i(1),
+    .ok_i(ok_alu2r || ok_mem2r),
+    .j_instr(j_instr_rm),
     .res_data(wb_res),
     .res_adr(wb_rd),
     .res_v(wb_res_v)
@@ -168,15 +177,18 @@ module cpu
     .rs1(rs1),
     .rs2(rs2),
     .rd_i(rd),
+    .pc(pc_rm2alu),
     .immediate(immediate_o),
     .imm(imm_o),
+    .j_instr2alu(j_instr2alu),
     .result_valid(alu_result_v),
     .result(alu_result),
     .rd_o(alu_rd),
+    .ok_i(ok_wb2alu),
+    .j_instr(j_instr_alu),
     .target(alu_target),
     .target_valid(alu_target_v),
-    .flush(flush),
-    .ok_i(ok_wb2alu)
+    .flush(flush)
   );
 
   mem mem

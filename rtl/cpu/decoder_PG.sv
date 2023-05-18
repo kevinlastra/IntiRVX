@@ -6,7 +6,7 @@ module decoder_PG
 //import cpu_configuration::*;
 (
   input logic[17:0] instruction,
-  output logic[14:0] decode
+  output logic[15:0] decode
 );
 
 // PARAMETERS
@@ -23,6 +23,8 @@ logic ecall;
 logic ebreak;
 
 logic illegal_instr;
+
+logic calc_j;  // jalr and conditional branchs
 
 // *-----------------------------------------------------------------------------------------------------*
 // |                                          TABLE INSTR DECODE                                         |
@@ -52,6 +54,7 @@ always  begin
   fence = 0;
   ecall = 0;
   ebreak = 0;
+  calc_j = 0;
 
   casez (instruction)
     18'b???????????0110111: // LUI
@@ -81,6 +84,7 @@ always  begin
       sub_unit = 'h0;
       sel = 'h3;
       imm = 1;
+      calc_j = 1;
     end
     18'b????????0001100011: // BEQ
     begin
@@ -88,6 +92,7 @@ always  begin
       sub_unit = 'h1;
       sel = 'h0;
       imm = 1;
+      calc_j = 1;
     end
     18'b????????0011100011: // BNE
     begin
@@ -95,6 +100,7 @@ always  begin
       sub_unit = 'h1;
       sel = 'h1;
       imm = 1;
+      calc_j = 1;
     end
     18'b????????1001100011: // BLT
     begin
@@ -102,6 +108,7 @@ always  begin
       sub_unit = 'h1;
       sel = 'h2;
       imm = 1;
+      calc_j = 1;
     end
     18'b????????1011100011: // BGE
     begin
@@ -109,6 +116,7 @@ always  begin
       sub_unit = 'h1;
       sel = 'h3;
       imm = 1;
+      calc_j = 1;
     end
     18'b????????1101100011: // BLTU
     begin
@@ -116,6 +124,7 @@ always  begin
       sub_unit = 'h1;
       sel = 'h4;
       imm = 1;
+      calc_j = 1;
     end
     18'b????????1111100011: // BGEU
     begin
@@ -123,6 +132,7 @@ always  begin
       sub_unit = 'h1;
       sel = 'h5;
       imm = 1;
+      calc_j = 1;
     end
     18'b????????0000000011: // LB
     begin
@@ -356,7 +366,7 @@ always  begin
     default:
       illegal_instr = 1;
   endcase
-  decode = {unit, sub_unit, sel, imm, csr, fence, ecall, ebreak, illegal_instr};
+  decode = {unit, sub_unit, sel, imm, csr, fence, ecall, ebreak, illegal_instr, calc_j};
 end
 
 endmodule

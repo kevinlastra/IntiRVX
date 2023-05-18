@@ -20,19 +20,24 @@ module alu
   input logic[xlen-1:0] rs2,
   input logic[4:0] rd_i,
 
+  input logic[xlen-1:0] pc,
   input logic[xlen-1:0] immediate,
   input logic imm,
+  input logic j_instr2alu,
 
   // Write back interface
   output logic result_valid,
   output logic[xlen-1:0] result,
   output logic[4:0] rd_o,
+  input logic ok_i,
+
+  // PC control interface
+  output logic j_instr,
 
   output logic[xlen-1:0] target,
   output logic target_valid,
 
-  input logic flush,
-  input logic ok_i
+  input logic flush
 );
 
 parameter xlen = 32;
@@ -57,16 +62,25 @@ logic diff;
 
 logic illegal_instr;
 
+logic neg;
+
 always begin
-  if(imm)
+  neg = (sub_unit == 3'h1) || 
+        (sub_unit == 3'h2 && sel == 4'h1) || 
+        (sub_unit == 3'h3 && (sel == 4'h0 && sel == 4'h1));
+end
+always begin
+  if(imm && !(sub_unit == 3'h1 && sel == 4'h1))
     opb = immediate;
   else
     opb = rs2;
 
-  if((sub_unit == 3'h2 && sel == 4'h1) || 
-    (sub_unit == 3'h3 && (sel == 4'h0 && sel == 4'h1)) || 
-    (sub_unit == 3'h1))
+  if(neg)
     opb = ~opb;
+end
+
+always begin
+  j_instr = j_instr2alu;
 end
 
 always begin
@@ -74,7 +88,7 @@ always begin
 end
 
 always begin
-  alu_res = rs1 + opb;
+  alu_res = rs1 + opb + {31'h0, neg};
 end
 
 always begin
@@ -87,17 +101,17 @@ always begin
     if(sub_unit == 3'h0) begin
       case (sel)
         4'h00: begin
-          res = rs2;
+          res = immediate;
         end
         4'h01: begin
-          res = alu_res;
+          res = pc + immediate;
         end
         4'h02: begin
-          res = rs1 + 4;
+          res = pc + 4;
         end 
         4'h03: begin
-          res = alu_res + 4;
-          j_res = alu_res & 0'hFFFFFFFE;
+          res = pc + 4;
+          j_res = (immediate + rs1) & 0'hFFFFFFFE;
           branch = 1;
         end
         default: 
@@ -128,7 +142,7 @@ always begin
       endcase
 
       if(branch) begin
-        j_res = rs2;
+        j_res = immediate + pc;
       end
 
     end else if(sub_unit == 3'h2) begin
@@ -192,10 +206,9 @@ fifo #(.DATA_SIZE($bits(data_i))) pipeline_alu2wb
   .clk(clk),
   .rst_n(rst_n),
   .data_i(data_i),
-  .valide(ok_o),
-  .flush(flush),
-  .data_o(data_o),
-  .ok(ok_i)
+  .flush(flush | !ok_o),
+  .ok(ok_i),
+  .data_o(data_o)
 );
 
 always begin

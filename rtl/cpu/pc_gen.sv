@@ -13,7 +13,7 @@ module pc_gen
   output logic ok_o,
 
   // Register interface
-  output logic[14:0] decode_o,
+  output logic[15:0] decode_o,
   output logic[24:0] instruction_o,
   output logic[xlen-1:0] pc_o,
   input logic ok_i,
@@ -32,15 +32,15 @@ parameter xlen = 32;
 
 // local variables
 
-logic[14:0] decode;
+logic[15:0] decode;
 
 logic[17:0] decode_parse_instr;
 logic[24:0] reg_imm_parse_instr;
 
 logic[31:0] jal_imm;
 
-logic[71:0] data_i;
-logic[71:0] data_o;
+logic[72:0] data_i;
+logic[72:0] data_o;
 
 logic[xlen-1:0] start_address = 'h0;
 
@@ -53,7 +53,7 @@ logic INIT = 0;
 logic NEXT = 1;
 // Decode
 
-always begin
+always_latch begin
   decode_parse_instr = {instruction[31:25], instruction[20], instruction[14:12], instruction[6:0]};
   reg_imm_parse_instr = instruction[31:7];
 end
@@ -65,7 +65,7 @@ decoder_PG decoder
 );
 
 always begin 
-  jal_instr = decode == 'b00000010100000;
+  jal_instr = decode == 'b000000101000000;
 end
 
 // calc new address
@@ -77,13 +77,15 @@ always begin
         next_pc = start_address;
       end 
       NEXT : begin
-        if(flush) begin
-          next_pc = alu_pc;
-        end else if (jal_instr) begin
-          jal_imm = {{12{instruction[31]}}, instruction[19:12], instruction[20], instruction[30:21], 1'b0};
-          next_pc = pc + jal_imm;
-        end else begin
-          next_pc = pc + 4;
+        if(ok_i) begin
+          if(flush) begin
+            next_pc = alu_pc;
+          end else if (jal_instr) begin
+            jal_imm = {{12{instruction[31]}}, instruction[19:12], instruction[20], instruction[30:21], 1'b0};
+            next_pc = pc + jal_imm;
+          end else begin
+            next_pc = pc + 4;
+          end
         end
       end
     endcase
@@ -119,10 +121,9 @@ fifo #(.DATA_SIZE($bits(data_i))) pipeline_pg2r
   .clk(clk),
   .rst_n(rst_n),
   .data_i(data_i),
-  .valide(1),
   .flush(flush),
-  .data_o(data_o),
-  .ok(ok_i)
+  .ok(ok_i),
+  .data_o(data_o)
 );
 
 always begin
@@ -133,10 +134,7 @@ end
 
 always begin
   next_pc_valide = ok_i;
-end
-
-always begin
-  ok_o = 1;
+  ok_o = ok_i;
 end
 
 

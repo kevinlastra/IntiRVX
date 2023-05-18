@@ -7,6 +7,7 @@ extern unsigned __stack_top;
 
 asm
 (
+  ".globl __start\n"
   "__start:\n"
   "la sp, __stack_init\n"
   "j call_main\n"

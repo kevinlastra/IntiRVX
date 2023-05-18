@@ -32,7 +32,7 @@ always begin
 end
 
 always begin
-  data_i = {resp};
+  data_i = resp;
 end
 
 fifo #(.DATA_SIZE($bits(data_i))) pipeline_f2d
@@ -40,16 +40,13 @@ fifo #(.DATA_SIZE($bits(data_i))) pipeline_f2d
   .clk(clk),
   .rst_n(rst_n),
   .data_i(data_i),
-  .valide(1),
-  .flush(0),
-  .data_o(data_o),
-  .ok(ok)
+  .flush(!ok),
+  .ok(ok),
+  .data_o(data_o)
 );
 
 always begin
-  {
-    data
-  } = data_o;
+  data = data_o;
 end
 
 

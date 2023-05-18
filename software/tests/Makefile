@@ -100,6 +100,6 @@ run_compliance:
 
 
 clean:
-	rm -f *.o *.riscv *.dump ihex dhex *.vcd; \
+	rm -f *.o *.riscv *.dump ihex dhex *.vcd base_tests/*.riscv base_tests/*.dump; \
 	cd ./compliance; \
 	make clean
