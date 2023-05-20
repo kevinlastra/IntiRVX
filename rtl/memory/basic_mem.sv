@@ -21,7 +21,7 @@ module basic_mem
 );
 parameter xlen = 32;
 parameter CELL_SIZE = 8;
-parameter NB_CELLS = 4096;
+parameter NB_CELLS = 200000;
 
 
 logic [CELL_SIZE-1:0] mem[NB_CELLS-1:0];

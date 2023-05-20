@@ -42,7 +42,7 @@ module tb_cpu
   );
 
   // memory
-  basic_mem imem
+  cache_32x4 #(.BASE_ADDRESSE(10000), .SIZE(2048)) imem
   (
     .clk(clk),
     .rst_n(rst_n),
@@ -55,7 +55,7 @@ module tb_cpu
     .ack(imem_ack)
   );
 
-  basic_mem dmem
+  cache_32x4 #(.BASE_ADDRESSE(20000), .SIZE(2048)) dmem
   (
     .clk(clk),
     .rst_n(rst_n),
@@ -68,12 +68,33 @@ module tb_cpu
     .ack(dmem_resp_v)
   );
 
+  parameter size = 8192;
+  logic[7:0] data[size-1:0];
 
+  int j = 0;
   initial begin
     $display("Loading memory.");
     
-    $readmemh("../../software/tests/ihex", imem.mem);
-    $readmemh("../../software/tests/dhex", dmem.mem);      
+    $readmemh("../../software/tests/ihex", data);
+
+    for(int i = 0; i < size; i++) begin
+      imem.mem[i][7:0] = data[i+j];    
+      imem.mem[i][15:8] = data[i+j+1]; 
+      imem.mem[i][23:16] = data[i+j+2];
+      imem.mem[i][31:24] = data[i+j+3];
+      j = j + 3;
+    end
+    
+    $readmemh("../../software/tests/dhex", data);      
+
+    j = 0;
+    for(int i = 0; i < size; i++) begin
+      dmem.mem[i][7:0] = data[i+j];    
+      dmem.mem[i][15:8] = data[i+j+1]; 
+      dmem.mem[i][23:16] = data[i+j+2];
+      dmem.mem[i][31:24] = data[i+j+3];
+      j = j + 3;
+    end
   end
 
 

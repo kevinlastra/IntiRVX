@@ -7,13 +7,13 @@ ENTRY (__start)
 
 SECTIONS
 {
-    . = 0x10000;
+    . = 0x0;
     .text : 
     { 
       *(.text)
       KEEP(*(.stack))
     }
-    . = 0x20000;
+    . = 0x10000;
     .data : 
     { 
       *(.data*) 

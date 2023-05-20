@@ -6,15 +6,15 @@ RISCV_PREFIX   ?= riscv64-unknown-elf-
 RISCV_GCC      ?= $(RISCV_PREFIX)gcc
 RISCV_OBJCOPY  ?= $(RISCV_PREFIX)objcopy
 RISCV_GCC_OPTS ?= -nostdlib
-LDSCRIPT       ?= $(TARGETDIR)/$(RISCV_TARGET)/device/rv32i/riscv32.ld
+LDSCRIPT       ?= $(ROOTDIR)/../../linkers/riscv32.ld
 
 COMPILE_TARGET=\
 	$$(RISCV_GCC) $(1) $$(RISCV_GCC_OPTS) \
 		-I$(ROOTDIR)/riscv-test-env/ \
 		-I$(ROOTDIR)/riscv-test-env/p/ \
 		-I$(TARGETDIR)/$(RISCV_TARGET)/ \
-		-T$(LDSCRIPT) $$(<) \
-		-o $$(@); \
-  $$(RISCV_OBJCOPY) -O verilog -j .text.init --change-section-address .text.init-0x80000000 $$@ $$@.ihex; \
-  $$(RISCV_OBJCOPY) -O verilog -j .data --change-section-address .text.init-0x20000000 $$@ $$@.dhex;
+		-T$(LDSCRIPT) $$< \
+		-o $$(@);
+  
+  
   
