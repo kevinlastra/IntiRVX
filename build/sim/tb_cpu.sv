@@ -1,15 +1,12 @@
 
 
 
-
-
 module tb_cpu
+import cpu_parameters::*;
 (
   input logic clk,
   input logic rst_n
 );
-  parameter xlen = 32;
-
 
   // imem
   logic [xlen-1:0] imem_adr;
@@ -42,7 +39,7 @@ module tb_cpu
   );
 
   // memory
-  cache_32x4 #(.BASE_ADDRESSE(10000), .SIZE(2048)) imem
+  cache_32x4 #(.base_addresse(10000), .size(2048), .xlen(xlen)) imem
   (
     .clk(clk),
     .rst_n(rst_n),
@@ -55,7 +52,7 @@ module tb_cpu
     .ack(imem_ack)
   );
 
-  cache_32x4 #(.BASE_ADDRESSE(20000), .SIZE(2048)) dmem
+  cache_32x4 #(.base_addresse(20000), .size(2048), .xlen(xlen)) dmem
   (
     .clk(clk),
     .rst_n(rst_n),

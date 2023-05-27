@@ -3,14 +3,11 @@
 
 
 module decoder_PG
-//import cpu_configuration::*;
+import cpu_parameters::*;
 (
   input logic[17:0] instruction,
   output logic[15:0] decode
 );
-
-// PARAMETERS
-parameter xlen = 32;
 
 logic[1:0] unit; //{alu, l/s, csr}
 logic[2:0] sub_unit; 

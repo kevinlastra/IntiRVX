@@ -2,8 +2,9 @@
 
 
 module cache_32x4
-#(parameter BASE_ADDRESSE=20000,
-  parameter SIZE=1024)
+#(parameter base_addresse=20000,
+  parameter size=1024,
+  parameter xlen=32)
 (
     // Global inputs
     input logic clk,
@@ -21,14 +22,13 @@ module cache_32x4
     output logic ack
 );
 
-parameter xlen = 32;
 parameter cell_size = 32;
 parameter nb_cells = 4;
 
-logic[cell_size*nb_cells-1:0] mem[SIZE-1:0];
+logic[cell_size*nb_cells-1:0] mem[size-1:0];
 
 logic[31:0] local_adr;
-logic[$clog2(SIZE)-1:0] index;        // max 25
+logic[$clog2(size)-1:0] index;        // max 25
 logic[6:0]  offset;
 
 logic [31:0] cell_mask;
@@ -50,8 +50,8 @@ logic mem_error;
 // #############################################################################################
 
 always begin
-  local_adr = (adr - BASE_ADDRESSE);
-  index = local_adr[($clog2(SIZE)-1)+7:7];
+  local_adr = (adr - base_addresse);
+  index = local_adr[($clog2(size)-1)+7:7];
   offset = local_adr[6:0] & 7'b110_0000;
 end
 

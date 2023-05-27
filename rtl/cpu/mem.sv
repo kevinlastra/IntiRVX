@@ -3,6 +3,7 @@
 
 
 module mem
+import cpu_parameters::*;
 (
   // Global interface
   input logic clk,
@@ -40,7 +41,6 @@ module mem
 	input logic ok_i
 );
 
-parameter xlen = 32;
 
 logic[xlen+5:0] data_i;
 logic[xlen+5:0] data_o;

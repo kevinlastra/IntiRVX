@@ -3,6 +3,7 @@
 
 
 module ifetch
+import cpu_parameters::*;
 (
 	// Global interface
 	input logic clk,
@@ -13,15 +14,13 @@ module ifetch
   input logic[xlen-1:0] resp,
 
 	// Pc_gen interface
-	output logic[xlen-1:0] data,
+	output logic[xlen-1:0] instruction,
   input logic ok,
 
   // PC Control interface
   input logic[xlen-1:0] target,
   input logic flush
 );
-
-parameter xlen = 32;
 
 logic[31:0] data_i;
 logic[31:0] data_o;
@@ -46,7 +45,7 @@ fifo #(.DATA_SIZE($bits(data_i))) pipeline_f2d
 );
 
 always begin
-  data = data_o;
+  instruction = data_o;
 end
 
 

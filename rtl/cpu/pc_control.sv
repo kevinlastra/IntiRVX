@@ -1,6 +1,7 @@
 
 
 module pc_control
+import cpu_parameters::*;
 (
   // Global interface
   input logic clk,
@@ -26,8 +27,6 @@ module pc_control
   input logic[xlen-1:0] alu_target
 
 );
-
-parameter xlen = 32;
 
 
 always begin

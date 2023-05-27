@@ -2,9 +2,9 @@
 
 
 module cpu
-//import cpu_configuration::*;
+import cpu_parameters::*;
 (
-  // Global inputs
+  // Global interface
   input logic clk,
   input logic rst_n,
 
@@ -23,10 +23,7 @@ module cpu
   input logic[xlen-1:0] dmem_resp,
   input logic dmem_resp_v
 
-);
-  // PARAMETERS
-  parameter xlen = 32;
-  
+); 
 
   // ifetch
   logic[xlen-1:0] data_f2d;
@@ -84,9 +81,19 @@ module cpu
 
   logic ok_mem2r;
 
+  // CSR
+
+  logic csr_result_v;
+  logic[xlen-1:0] csr_result;
+  logic[4:0] csr_rd;
+  logic csr_exception;
+
+  logic ok_csr2r;
+
   // Write back
   logic ok_wb2alu;
   logic ok_wb2mem;
+  logic ok_wb2csr;
 
   logic[xlen-1:0] wb_res;
   logic wb_res_v;
@@ -99,7 +106,7 @@ module cpu
     .rst_n(rst_n),
     .target_address(adr_instruction),
     .resp(resp_instruction),
-    .data(data_f2d),
+    .instruction(data_f2d),
     .ok(ok_d2f),
     .target(target),
     .flush(flush)
@@ -159,7 +166,7 @@ module cpu
     .jal_res_o(jal_res_o),
     .j_instr2alu(j_instr2alu),
     .flush(flush),
-    .ok_i(ok_alu2r || ok_mem2r),
+    .ok_i(ok_alu2r || ok_mem2r || ok_csr2r),
     .j_instr(j_instr_rm),
     .res_data(wb_res),
     .res_adr(wb_rd),
@@ -217,6 +224,24 @@ module cpu
     .ok_i(ok_wb2mem)
   );
 
+  csr csr
+  (
+    .clk(clk),
+    .rst_n(rst_n),
+    .ok_o(ok_csr2r),
+    .unit(unit_o),
+    .sel(sel_o),
+    .imm(imm_o),
+    .rs1(rs1),
+    .csr_adr(immediate_o[11:0]),
+    .rd_i(rd),
+    .result_v(csr_result_v),
+    .result(csr_result),
+    .rd_o(csr_rd),
+    .csr_exception(csr_exception),
+    .ok_i(ok_wb2csr)
+  );
+
   write_back write_back
   (
     .clk(clk),
@@ -229,6 +254,11 @@ module cpu
     .mem_rd(mem_rd),
     .mem_res_v(mem_result_v),
     .mem_ok(ok_wb2mem),
+    .csr_exception(csr_exception),
+    .csr_res(csr_result),
+    .csr_rd(csr_rd),
+    .csr_res_v(csr_result_v),
+    .csr_ok(ok_wb2csr),
     .result(wb_res),
     .rd(wb_rd),
     .result_v(wb_res_v)

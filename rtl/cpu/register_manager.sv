@@ -3,7 +3,7 @@
 
 
 module register_manager
-//import cpu_configuration::*;
+import cpu_parameters::*;
 (
   // Global interface
   input logic clk,
@@ -40,8 +40,6 @@ module register_manager
   input logic[4:0] res_adr,
   input logic res_v
 );
-// PARAMETERS
-parameter xlen = 32;
 
 logic[4:0] rs1_ad;
 logic[4:0] rs2_ad;

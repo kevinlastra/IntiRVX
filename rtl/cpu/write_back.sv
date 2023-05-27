@@ -2,6 +2,7 @@
 
 
 module write_back
+import cpu_parameters::*;
 (
   // Global interface
   input logic clk,
@@ -21,33 +22,47 @@ module write_back
 
   output logic mem_ok,
 
-  // Regeister manager interface
+  // CSR interface
+  input logic csr_exception,
+  input logic[xlen-1:0] csr_res,
+  input logic[4:0] csr_rd,
+  input logic csr_res_v,
+
+  output logic csr_ok,
+
+  // Register manager interface
   output logic[xlen-1:0] result,
   output logic[4:0] rd,
   output logic result_v
 );
 
-parameter xlen = 32;
 
-logic[1:0] res_v;
+logic[2:0] res_v;
+
+logic exception;
 
 always begin
-  res_v =  {alu_res_v, mem_res_v};
+  res_v =  {alu_res_v, csr_res_v, mem_res_v};
 end
 
 always begin
-  
+  exception = csr_exception;
+end
 
+always begin
+  result_v = 1;
   case (res_v)
-    2'b01: begin
+    3'b001: begin
       result = mem_res;
       rd = mem_rd;
-      result_v = 1;
     end
-    2'b10: begin
+    3'b010: begin
+      result = csr_res;
+      rd = csr_rd;
+    end
+    3'b100: begin
       result = alu_res;
       rd = alu_rd;
-      result_v = 1;
     end 
     default
       result_v = 0;
@@ -55,8 +70,9 @@ always begin
 end
 
 always begin
-  alu_ok = 1;
-  mem_ok = 1;
+  alu_ok = !exception;
+  mem_ok = !exception;
+  csr_ok = !exception;
 end
 
 

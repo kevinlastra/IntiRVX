@@ -4,8 +4,9 @@
 
 
 module alu
+import cpu_parameters::*;
 (
-  // Global inputs
+  // Global interface
   input logic clk,
   input logic rst_n,
 
@@ -39,8 +40,6 @@ module alu
 
   input logic flush
 );
-
-parameter xlen = 32;
 
 logic[xlen-1:0] opb;
 logic[xlen-1:0] alu_res;

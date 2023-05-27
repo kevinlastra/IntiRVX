@@ -2,7 +2,7 @@
 
 
 module register_file
-//import cpu_configuration::*;
+import cpu_parameters::*;
 (
   // Global interface
   input logic clk,
@@ -27,8 +27,6 @@ module register_file
   output logic[xlen-1:0] r1_data,
   output logic r_v
 );
-// PARAMETERS
-parameter xlen = 32;
 
 logic[xlen-1:0] register[31:0];
 

@@ -91,12 +91,12 @@ COMPLIANCE_RV32I_SRC=\
 #										I-XOR-01 \
 #										I-XORI-01 
 
-all_compliance: clean setup_compliance run_compliance
+compliance_all: clean compliance_setup compliance_run
 
-setup_compliance:
+compliance_setup:
 	cd compliance && make all_variant
 
-run_compliance:
+compliance_run:
 	@for i in $(COMPLIANCE_RV32I_SRC) ; do \
 		mv ./compliance/work/rv32i/$$i.elf . ; \
 		${DUMP} -d $$i.elf > $$i.dump; \
