@@ -6,7 +6,7 @@ module decoder_PG
 import cpu_parameters::*;
 (
   input logic[17:0] instruction,
-  output logic[15:0] decode
+  output logic[14:0] decode
 );
 
 logic[1:0] unit; //{alu, l/s, csr}
@@ -14,10 +14,10 @@ logic[2:0] sub_unit;
 logic[3:0] sel;
 logic imm;
 
-logic csr;
 logic fence;
 logic ecall;
 logic ebreak;
+logic mret;
 
 logic illegal_instr;
 
@@ -47,35 +47,35 @@ always  begin
   illegal_instr = 0;
   imm = 0;
   imm = 0;
-  csr = 0;
   fence = 0;
   ecall = 0;
   ebreak = 0;
   calc_j = 0;
+  mret   = 0;
 
   casez (instruction)
-    18'b???????????0110111: // LUI
+    19'b????????????0110111: // LUI
     begin
       unit = 'h0;
       sub_unit = 'h0;
       sel = 'h0;
       imm = 1;
     end
-    18'b???????????0010111: // AUIPC
+    19'b????????????0010111: // AUIPC
     begin
       unit = 'h0;
       sub_unit = 'h0;
       sel = 'h1;
       imm = 1;
     end
-    18'b???????????1101111: // JAL
+    19'b????????????1101111: // JAL
     begin
       unit = 'h0;
       sub_unit = 'h0;
       sel = 'h2;
       imm = 1;
     end
-    18'b????????0001100111: // JALR
+    19'b?????????0001100111: // JALR
     begin
       unit = 'h0;
       sub_unit = 'h0;
@@ -83,7 +83,7 @@ always  begin
       imm = 1;
       calc_j = 1;
     end
-    18'b????????0001100011: // BEQ
+    19'b?????????0001100011: // BEQ
     begin
       unit = 'h0;
       sub_unit = 'h1;
@@ -91,7 +91,7 @@ always  begin
       imm = 1;
       calc_j = 1;
     end
-    18'b????????0011100011: // BNE
+    19'b?????????0011100011: // BNE
     begin
       unit = 'h0;
       sub_unit = 'h1;
@@ -99,7 +99,7 @@ always  begin
       imm = 1;
       calc_j = 1;
     end
-    18'b????????1001100011: // BLT
+    19'b?????????1001100011: // BLT
     begin
       unit = 'h0;
       sub_unit = 'h1;
@@ -107,7 +107,7 @@ always  begin
       imm = 1;
       calc_j = 1;
     end
-    18'b????????1011100011: // BGE
+    19'b?????????1011100011: // BGE
     begin
       unit = 'h0;
       sub_unit = 'h1;
@@ -115,7 +115,7 @@ always  begin
       imm = 1;
       calc_j = 1;
     end
-    18'b????????1101100011: // BLTU
+    19'b?????????1101100011: // BLTU
     begin
       unit = 'h0;
       sub_unit = 'h1;
@@ -123,7 +123,7 @@ always  begin
       imm = 1;
       calc_j = 1;
     end
-    18'b????????1111100011: // BGEU
+    19'b?????????1111100011: // BGEU
     begin
       unit = 'h0;
       sub_unit = 'h1;
@@ -131,239 +131,243 @@ always  begin
       imm = 1;
       calc_j = 1;
     end
-    18'b????????0000000011: // LB
+    19'b?????????0000000011: // LB
     begin
       unit = 'h1;
       sub_unit = 'h0;
       sel = 'h0;
       imm = 1;
     end
-    18'b????????0010000011: // LH
+    19'b?????????0010000011: // LH
     begin
       unit = 'h1;
       sub_unit = 'h0;
       sel = 'h1;
       imm = 1;
     end
-    18'b????????0100000011: // LW
+    19'b?????????0100000011: // LW
     begin
       unit = 'h1;
       sub_unit = 'h0;
       sel = 'h2;
       imm = 1;
     end
-    18'b????????1000000011: // LBU
+    19'b?????????1000000011: // LBU
     begin
       unit = 'h1;
       sub_unit = 'h0;
       sel = 'h3;
       imm = 1;
     end
-    18'b????????1010000011: // LHU 
+    19'b?????????1010000011: // LHU 
     begin
       unit = 'h1;
       sub_unit = 'h0;
       sel = 'h4;
       imm = 1;
     end
-    18'b????????0000100011: // SB 
+    19'b?????????0000100011: // SB 
     begin
       unit = 'h1;
       sub_unit = 'h1;
       sel = 'h0;
       imm = 1;
     end
-    18'b????????0010100011: // SH 
+    19'b?????????0010100011: // SH 
     begin
       unit = 'h1;
       sub_unit = 'h1;
       sel = 'h1;
       imm = 1;
     end
-    18'b????????0100100011: // SW   
+    19'b?????????0100100011: // SW   
     begin
       unit = 'h1;
       sub_unit = 'h1;
       sel = 'h2;
       imm = 1;
     end
-    18'b????????0000010011: // ADDI 
+    19'b?????????0000010011: // ADDI 
     begin
       unit = 'h0;
       sub_unit = 'h2;
       sel = 'h0;
       imm = 1;
     end
-    18'b????????0100010011: // SLTI 
+    19'b?????????0100010011: // SLTI 
     begin
       unit = 'h0;
       sub_unit = 'h3;
       sel = 'h0;
       imm = 1;
     end
-    18'b????????0110010011: // SLTIU 
+    19'b?????????0110010011: // SLTIU 
     begin
       unit = 'h0;
       sub_unit = 'h3;
       sel = 'h1;
       imm = 1;
     end
-    18'b????????1000010011: // XORI 
+    19'b?????????1000010011: // XORI 
     begin
       unit = 'h0;
       sub_unit = 'h3;
       sel = 'h2;
       imm = 1;
     end
-    18'b????????1100010011: // ORI   
+    19'b?????????1100010011: // ORI   
     begin
       unit = 'h0;
       sub_unit = 'h3;
       sel = 'h3;
       imm = 1;
     end
-    18'b????????1110010011: // ANDI 
+    19'b?????????1110010011: // ANDI 
     begin
       unit = 'h0;
       sub_unit = 'h3;
       sel = 'h4;
       imm = 1;
     end
-    18'b0000000?0010010011: // SLLI
+    19'b0000000??0010010011: // SLLI
     begin
       unit = 'h0;
       sub_unit = 'h4;
       sel = 'h0;
       imm = 1;
     end
-    18'b0000000?1010010011: // SRLI
+    19'b0000000??1010010011: // SRLI
     begin
       unit = 'h0;
       sub_unit = 'h4;
       sel = 'h1;
       imm = 1;
     end
-    18'b0100000?1010010011: // SRAI
+    19'b0100000??1010010011: // SRAI
     begin
       unit = 'h0;
       sub_unit = 'h4;
       sel = 'h1;
       imm = 1;
     end
-    18'b0000000?0000110011: // ADD
+    19'b0000000??0000110011: // ADD
     begin
       unit = 'h0;
       sub_unit = 'h2;
       sel = 'h0;
     end
-    18'b0100000?0000110011: // SUB
+    19'b0100000??0000110011: // SUB
     begin
       unit = 'h0;
       sub_unit = 'h2;
       sel = 'h1;
     end
-    18'b0000000?0010110011: // SLL
+    19'b0000000??0010110011: // SLL
     begin
       unit = 'h0;
       sub_unit = 'h4;
       sel = 'h0;
     end
-    18'b0000000?0100110011: // SLT
+    19'b0000000??0100110011: // SLT
     begin
       unit = 'h0;
       sub_unit = 'h3;
       sel = 'h0;
     end
-    18'b0000000?0110110011: // SLTU
+    19'b0000000??0110110011: // SLTU
     begin
       unit = 'h0;
       sub_unit = 'h3;
       sel = 'h1;
     end
-    18'b0000000?1000110011: // XOR
+    19'b0000000??1000110011: // XOR
     begin
       unit = 'h0;
       sub_unit = 'h3;
       sel = 'h2;
     end
-    18'b0000000?1010110011: // SRL
+    19'b0000000??1010110011: // SRL
     begin
       unit = 'h0;
       sub_unit = 'h4;
       sel = 'h1;
     end
-    18'b0100000?1010110011: // SRA
+    19'b0100000??1010110011: // SRA
     begin
       unit = 'h0;
       sub_unit = 'h4;
       sel = 'h2;
     end
-    18'b0000000?1100110011: // OR
+    19'b0000000??1100110011: // OR
     begin
       unit = 'h0;
       sub_unit = 'h3;
       sel = 'h3;
     end
-    18'b0000000?1110110011: // AND
+    19'b0000000??1110110011: // AND
     begin
       unit = 'h0;
       sub_unit = 'h3;
       sel = 'h4;
     end
-    18'b0000????0000001111: // FENCE
+    19'b0000?????0000001111: // FENCE
     begin
       fence = 'b1;
     end
-    18'b000000000010001111: // FENCE.I
+    19'b0000000000010001111: // FENCE.I
     begin
       fence = 'b1;
       imm = 'b1;
     end
-    18'b000000000001110011: // ECALL
+    19'b?000000000001110011: // ECALL
     begin
       ecall = 'b1;
     end
-    18'b000000010001110011: // EBREAK
+    19'b0000000010001110011: // EBREAK
     begin
       ebreak = 'b1;
     end
-    18'b????????0011110011: // CSRRW
+    19'b0011000100001110011: // MRET
     begin
-      csr = 'b1;
+      mret = 'b1;
+    end
+    19'b?????????0011110011: // CSRRW
+    begin
+      unit = 'b10;
       sel = 'b0;
     end
-    18'b????????0101110011: // CSRRS
+    19'b?????????0101110011: // CSRRS
     begin
-      csr = 'b1;
+      unit = 'b10;
       sel = 'b1;
     end
-    18'b????????0111110011: // CSRRC
+    19'b?????????0111110011: // CSRRC
     begin
-      csr = 'b1;
+      unit = 'b10;
       sel = 'b10;
     end
-    18'b????????1011110011: // CSRRWI
+    19'b?????????1011110011: // CSRRWI
     begin
-      csr = 'b1;
+      unit = 'b10;
       sel = 'b0;
       imm = 1;
     end
-    18'b????????1101110011: // CSRRSI
+    19'b?????????1101110011: // CSRRSI
     begin
-      csr = 'b1;
+      unit = 'b10;
       sel = 'b1;
       imm = 1;
     end
-    18'b????????1111110011: // CSRRCI
+    19'b?????????1111110011: // CSRRCI
     begin
-      csr = 'b1;
+      unit = 'b10;
       sel = 'b10;
       imm = 1;
     end
     default:
       illegal_instr = 1;
   endcase
-  decode = {unit, sub_unit, sel, imm, csr, fence, ecall, ebreak, illegal_instr, calc_j};
+  decode = {unit, sub_unit, sel, imm, fence, ecall, ebreak, illegal_instr, calc_j};
 end
 
 endmodule

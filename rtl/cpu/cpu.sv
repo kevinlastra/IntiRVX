@@ -7,7 +7,7 @@ import cpu_parameters::*;
   // Global interface
   input logic clk,
   input logic rst_n,
-
+  input logic[xlen-1:0] start_address,
   
   // system imem interface
   input logic [xlen-1:0] resp_instruction,
@@ -31,7 +31,7 @@ import cpu_parameters::*;
   // pc_gen
   logic ok_d2f;
 
-  logic[15:0] decode_pg2r;
+  logic[14:0] decode_pg2r;
   logic[24:0] instruction_pg2r;
   logic[xlen-1:0] instr_pc;  
   logic[xlen-1:0] jal_res_i;
@@ -63,7 +63,7 @@ import cpu_parameters::*;
   logic[xlen-1:0] pc_rm2alu;
   logic ok_r2p;
   logic j_instr2alu;
-
+  logic instret_v;
   // ALU
   logic alu_result_v;
   logic[xlen-1:0] alu_result;
@@ -116,6 +116,7 @@ import cpu_parameters::*;
   (
     .clk(clk),
     .rst_n(rst_n),
+    .start_address(start_address),
     .instruction(data_f2d),
     .ok_o(ok_d2f),
     .decode_o(decode_pg2r),
@@ -165,6 +166,7 @@ import cpu_parameters::*;
     .immediate_o(immediate_o),
     .jal_res_o(jal_res_o),
     .j_instr2alu(j_instr2alu),
+    .instret_v(instret_v),
     .flush(flush),
     .ok_i(ok_alu2r || ok_mem2r || ok_csr2r),
     .j_instr(j_instr_rm),
@@ -235,6 +237,7 @@ import cpu_parameters::*;
     .rs1(rs1),
     .csr_adr(immediate_o[11:0]),
     .rd_i(rd),
+    .instret_v(instret_v),
     .result_v(csr_result_v),
     .result(csr_result),
     .rd_o(csr_rd),

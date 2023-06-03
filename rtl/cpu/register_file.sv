@@ -31,18 +31,18 @@ import cpu_parameters::*;
 logic[xlen-1:0] register[31:0];
 
 // dispatch
-logic reg_v[31:0];
+logic reg_v_n[31:0];
 
 always_latch begin
   r_v = 1;
 
   if(r0_valid) begin
     r0_data = register[r0_ad];
-    r_v = !reg_v[r0_ad];
+    r_v = !reg_v_n[r0_ad];
   end 
   if(r1_valid) begin
     r1_data = register[r1_ad];
-    r_v = r_v & !reg_v[r1_ad];
+    r_v = r_v & !reg_v_n[r1_ad];
   end
 end
 
@@ -52,13 +52,13 @@ always @(posedge clk) begin
       register[0] <= 'h0;
     else
       register[w_ad] <= w_data;
-      reg_v[w_ad] <= 'b0;
+      reg_v_n[w_ad] <= 'b0;
   end
 end
 
 always_latch begin
   if(block_rd && rd != 'h0)
-    reg_v[rd] <= 'b1;
+    reg_v_n[rd] <= 'b1;
 end
 
 endmodule

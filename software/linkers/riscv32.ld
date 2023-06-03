@@ -2,18 +2,18 @@
 __stack_size = 0x2000;
 
 
-ENTRY (__start)
+ENTRY (_start)
 
 
 SECTIONS
 {
-    . = 0x0;
+    . = 0x10000;
     .text : 
     { 
       *(.text)
       KEEP(*(.stack))
     }
-    . = 0x10000;
+    . = 0x20000;
     .data : 
     { 
       *(.data*) 

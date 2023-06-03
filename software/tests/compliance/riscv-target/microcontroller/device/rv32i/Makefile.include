@@ -6,7 +6,7 @@ RISCV_PREFIX   ?= riscv64-unknown-elf-
 RISCV_GCC      ?= $(RISCV_PREFIX)gcc
 RISCV_OBJCOPY  ?= $(RISCV_PREFIX)objcopy
 RISCV_GCC_OPTS ?= -nostdlib
-LDSCRIPT       ?= $(ROOTDIR)/../../linkers/riscv32.ld
+LDSCRIPT       = $(ROOTDIR)/../../linkers/riscv32.ld
 
 COMPILE_TARGET=\
 	$$(RISCV_GCC) $(1) $$(RISCV_GCC_OPTS) \

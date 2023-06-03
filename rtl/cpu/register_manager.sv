@@ -10,7 +10,7 @@ import cpu_parameters::*;
   input logic rst_n,
 
   // Pc_gen interface
-  input logic[15:0] decode,
+  input logic[14:0] decode,
   input logic[24:0] instruction,
   input logic[xlen-1:0] pc_i,
   output logic ok_o,
@@ -28,6 +28,7 @@ import cpu_parameters::*;
   output logic[xlen-1:0] immediate_o,
   output logic[xlen-1:0] jal_res_o,
   output logic j_instr2alu,
+  output logic instret_v,
 
   input logic flush,
   input logic ok_i,
@@ -50,8 +51,8 @@ logic[3:0] sel;
 logic imm;
 
 //pipeline signals
-logic[176:0] data_i;
-logic[176:0] data_o;
+logic[177:0] data_i;
+logic[177:0] data_o;
 
 logic[xlen-1:0] rs1;
 logic rs1_v;
@@ -70,11 +71,14 @@ logic l_imm_v;
 
 logic dispatch;
 
+logic exception;
+
 always begin
-  unit = decode[15:14];
-  sub_unit = decode[13:11];
-  sel = decode[10:7];
-  imm = decode[6];
+  unit = decode[14:13];
+  sub_unit = decode[12:10];
+  sel = decode[9:6];
+  imm = decode[5];
+  exception = decode[1];
   j_instr = decode[0];
 end
 
@@ -95,35 +99,34 @@ always_latch begin
   l_imm_v = 0;
   s_imm_v = 0;
 
-  if (imm) begin
-    if((unit == 2'h0) && (sub_unit == 3'h0) && (sel != 4'h3)) begin
-      l_imm_v = 1;
-    end else begin
-      s_imm_v = 1;
-    end
+  if(unit == 2'h0 && sub_unit == 3'h0 && sel != 4'h3) begin
+    l_imm_v = 1;
+  end else if(imm | (unit == 2'h2)) begin
+    s_imm_v = 1;
   end
 
   // if ALU sub 0 and not jarl then the rs1 is not used
   rs1_v = !l_imm_v;
 
   // if ALU and not sub 3 and not immediate
-  if(unit == 2'h1)
-    rs2_v = sub_unit == 3'h1;  
+  rs2_v = (unit == 2'h0) && ((sub_unit != 3'h0 && !imm) | (sub_unit == 3'h1));    
 
   // if not branch conditional or store instruction
-  rd_v = (unit == 2'h0 && sub_unit != 3'h1) || (unit == 2'h1 && sub_unit != 3'h1);
+  rd_v = !(unit == 2'h0 && sub_unit == 3'h1) || !(unit == 2'h1 && sub_unit == 3'h1);
 end
 
 always_latch begin
   if(l_imm_v) begin
     if(unit == 2'h0 && sub_unit == 3'h0 && sel == 4'h2) // jal
       immediate = {{12{l_imm[19]}}, l_imm[10:1], l_imm[11], l_imm[19:12], 1'b0};
-    if(unit == 2'h0 && sub_unit == 3'h1) // b
-      immediate = {{20{s_imm[11]}}, s_imm[0], s_imm[10:5], s_imm[4:1], 1'b0};
     else
       immediate = {l_imm, 12'h0};    
-  end else if(s_imm_v)
-    immediate =  {{20{s_imm[11]}} , s_imm};
+  end else if(s_imm_v) begin
+    if(unit == 2'h0 && sub_unit == 3'h1) // b
+        immediate = {{20{s_imm[11]}}, s_imm[0], s_imm[10:5], s_imm[4:1], 1'b0};
+    else
+      immediate =  {{20{s_imm[11]}} , s_imm};
+  end
 end
 
 register_file register_file
@@ -159,7 +162,8 @@ always begin
             imm,
             immediate,
             jal_res_i,
-            decode[0]};
+            j_instr,
+            dispatch | !exception};
 end
 
 fifo #(.DATA_SIZE($bits(data_i))) pipeline_r2c
@@ -186,7 +190,8 @@ always begin
     imm_o,
     immediate_o,
     jal_res_o,
-    j_instr2alu
+    j_instr2alu,
+    instret_v
   } = data_o;
 end
 

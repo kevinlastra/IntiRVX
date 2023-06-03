@@ -59,6 +59,8 @@ logic greater_eq;
 logic greater_eq_u;
 logic diff;
 
+logic valid_instruction;
+
 logic illegal_instr;
 
 logic neg;
@@ -69,13 +71,10 @@ always begin
         (sub_unit == 3'h3 && (sel == 4'h0 && sel == 4'h1));
 end
 always begin
-  if(imm && !(sub_unit == 3'h1 && sel == 4'h1))
-    opb = immediate;
+  if(imm && sub_unit != 3'h1)
+    opb = neg ? ~immediate : immediate;
   else
-    opb = rs2;
-
-  if(neg)
-    opb = ~opb;
+    opb = neg ? ~rs2 : rs2;
 end
 
 always begin
@@ -96,7 +95,7 @@ always begin
   branch = 0;
 
   illegal_instr = 0;
-  if(ok_o) begin
+  if(valid_instruction) begin
     if(sub_unit == 3'h0) begin
       case (sel)
         4'h00: begin
@@ -185,7 +184,7 @@ always begin
 end
 
 always begin
-  res_v = ~illegal_instr && ok_o;
+  res_v = ~illegal_instr && valid_instruction;
 end
 
 
@@ -205,7 +204,7 @@ fifo #(.DATA_SIZE($bits(data_i))) pipeline_alu2wb
   .clk(clk),
   .rst_n(rst_n),
   .data_i(data_i),
-  .flush(flush | !ok_o),
+  .flush(flush | !valid_instruction),
   .ok(ok_i),
   .data_o(data_o)
 );
@@ -222,6 +221,7 @@ end
 
 always begin
   ok_o = unit == 2'h0;
+  valid_instruction = unit == 2'h0;
 end
 
 endmodule

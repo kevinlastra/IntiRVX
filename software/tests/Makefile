@@ -14,8 +14,8 @@ TB=Vtb_cpu
 
 FLAGS= -nostdlib -march=${MARCH} -mabi=${MABI} -T ../linkers/riscv32.ld -I/usr/include
 
-TEXT_BASE_ADDRESSE=0x0
-DATA_BASE_ADDRESSE=0x10000
+TEXT_BASE_ADDRESSE=0x10000
+DATA_BASE_ADDRESSE=0x20000
 
 %.riscv : %.o crt0.o
 	$(MAKE) $*.dump

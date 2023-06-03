@@ -7,13 +7,14 @@ import cpu_parameters::*;
   // Global interface
   input logic clk,
   input logic rst_n,
+  input logic[xlen-1:0] start_address,
 
   // Ifetch interface
   input logic[xlen-1:0] instruction,
   output logic ok_o,
 
   // Register interface
-  output logic[15:0] decode_o,
+  output logic[14:0] decode_o,
   output logic[24:0] instruction_o,
   output logic[xlen-1:0] pc_o,
   input logic ok_i,
@@ -29,17 +30,15 @@ import cpu_parameters::*;
 
 // local variables
 
-logic[15:0] decode;
+logic[14:0] decode;
 
-logic[17:0] decode_parse_instr;
+logic[18:0] decode_parse_instr;
 logic[24:0] reg_imm_parse_instr;
 
 logic[31:0] jal_imm;
 
-logic[72:0] data_i;
-logic[72:0] data_o;
-
-logic[xlen-1:0] start_address = 'h0;
+logic[71:0] data_i;
+logic[71:0] data_o;
 
 logic[xlen-1:0] pc;
 
@@ -51,7 +50,7 @@ logic NEXT = 1;
 // Decode
 
 always_latch begin
-  decode_parse_instr = {instruction[31:25], instruction[20], instruction[14:12], instruction[6:0]};
+  decode_parse_instr = {instruction[31:25], instruction[21:20], instruction[14:12], instruction[6:0]};
   reg_imm_parse_instr = instruction[31:7];
 end
 
@@ -62,7 +61,7 @@ decoder_PG decoder
 );
 
 always begin 
-  jal_instr = decode == 'b000000101000000;
+  jal_instr = decode == 'b000000010100000;
 end
 
 // calc new address

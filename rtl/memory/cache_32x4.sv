@@ -29,7 +29,7 @@ logic[cell_size*nb_cells-1:0] mem[size-1:0];
 
 logic[31:0] local_adr;
 logic[$clog2(size)-1:0] index;        // max 25
-logic[6:0]  offset;
+logic[3:0]  offset;
 
 logic [31:0] cell_mask;
 
@@ -49,10 +49,12 @@ logic mem_error;
 // #                                                                                           #
 // #############################################################################################
 
+
+
 always begin
   local_adr = (adr - base_addresse);
-  index = local_adr[($clog2(size)-1)+7:7];
-  offset = local_adr[6:0] & 7'b110_0000;
+  index = local_adr[($clog2(size)-1)+4:4];
+  offset = local_adr[3:0] & 4'b1100;
 end
 
 always begin
@@ -70,10 +72,10 @@ always @(negedge clk) begin
   mem_error <= 0;
   if(rst_n && w_v) begin
     case (offset)
-      7'b000_0000: mem[index][31:0] <= (data & cell_mask);
-      7'b010_0000: mem[index][63:32] <= (data & cell_mask);
-      7'b100_0000: mem[index][95:64] <= (data & cell_mask);
-      7'b110_0000: mem[index][127:96] <= (data & cell_mask);
+      4'b0000: mem[index][31:0] <= (data & cell_mask);
+      4'b0100: mem[index][63:32] <= (data & cell_mask);
+      4'b1000: mem[index][95:64] <= (data & cell_mask);
+      4'b1100: mem[index][127:96] <= (data & cell_mask);
     default:
       mem_error <= 1;
     endcase
@@ -85,10 +87,10 @@ always @(negedge clk) begin
   mem_error <= 0;
   if(rst_n && r_v) begin
     case (offset)
-      7'b000_0000: resp <= mem[index][31:0];
-      7'b010_0000: resp <= mem[index][63:32];
-      7'b100_0000: resp <= mem[index][95:64];
-      7'b110_0000: resp <= mem[index][127:96];
+      4'b0000: resp <= mem[index][31:0];
+      4'b0100: resp <= mem[index][63:32];
+      4'b1000: resp <= mem[index][95:64];
+      4'b1100: resp <= mem[index][127:96];
     default:
       mem_error <= 1;
     endcase

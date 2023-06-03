@@ -42,7 +42,9 @@ logic[2:0] res_v;
 logic exception;
 
 always begin
-  res_v =  {alu_res_v, csr_res_v, mem_res_v};
+  res_v =  {alu_res_v && (alu_rd != 0), 
+            csr_res_v && (csr_rd != 0),
+            mem_res_v && (mem_rd != 0)};
 end
 
 always begin

@@ -7,10 +7,11 @@ import cpu_parameters::*;
   input logic clk,
   input logic rst_n
 );
+  logic[xlen-1:0] start_address = 32'h10000;
 
   // imem
-  logic [xlen-1:0] imem_adr;
-  logic [xlen-1:0] imem_resp;
+  logic[xlen-1:0] imem_adr;
+  logic[xlen-1:0] imem_resp;
   logic imem_ack;
 
   // dmem
@@ -27,6 +28,7 @@ import cpu_parameters::*;
   (
     .clk(clk),
     .rst_n(rst_n),
+    .start_address(start_address),
     .resp_instruction(imem_resp),
     .adr_instruction(imem_adr),
     .r_v(dmem_r_v),
@@ -39,7 +41,7 @@ import cpu_parameters::*;
   );
 
   // memory
-  cache_32x4 #(.base_addresse(10000), .size(2048), .xlen(xlen)) imem
+  cache_32x4 #(.base_addresse(32'h10000), .size(2048), .xlen(xlen)) imem
   (
     .clk(clk),
     .rst_n(rst_n),
@@ -52,7 +54,7 @@ import cpu_parameters::*;
     .ack(imem_ack)
   );
 
-  cache_32x4 #(.base_addresse(20000), .size(2048), .xlen(xlen)) dmem
+  cache_32x4 #(.base_addresse(32'h20000), .size(2048), .xlen(xlen)) dmem
   (
     .clk(clk),
     .rst_n(rst_n),
@@ -75,22 +77,25 @@ import cpu_parameters::*;
     $readmemh("../../software/tests/ihex", data);
 
     for(int i = 0; i < size; i++) begin
-      imem.mem[i][7:0] = data[i+j];    
-      imem.mem[i][15:8] = data[i+j+1]; 
-      imem.mem[i][23:16] = data[i+j+2];
-      imem.mem[i][31:24] = data[i+j+3];
-      j = j + 3;
+      imem.mem[i][31:0]   = {data[j+3], data[j+2], data[j+1], data[j]};
+      imem.mem[i][63:32]  = {data[j+7], data[j+6], data[j+5], data[j+4]};
+      imem.mem[i][95:64]  = {data[j+11], data[j+10], data[j+9], data[j+8]};
+      imem.mem[i][127:96] = {data[j+15], data[j+14], data[j+13], data[j+12]};
+      j = j + 16;
     end
+
+    
     
     $readmemh("../../software/tests/dhex", data);      
 
     j = 0;
     for(int i = 0; i < size; i++) begin
-      dmem.mem[i][7:0] = data[i+j];    
-      dmem.mem[i][15:8] = data[i+j+1]; 
-      dmem.mem[i][23:16] = data[i+j+2];
-      dmem.mem[i][31:24] = data[i+j+3];
-      j = j + 3;
+      dmem.mem[i][31:0]   = {data[j+3], data[j+2], data[j+1], data[j]};
+      dmem.mem[i][63:32]  = {data[j+7], data[j+6], data[j+5], data[j+4]};
+      dmem.mem[i][95:64]  = {data[j+11], data[j+10], data[j+9], data[j+8]};
+      dmem.mem[i][127:96] = {data[j+12], data[j+13], data[j+14], data[j+15]};
+
+      j = j + 16;
     end
   end
 
