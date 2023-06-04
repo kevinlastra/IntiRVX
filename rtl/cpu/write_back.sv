@@ -74,7 +74,7 @@ end
 always begin
   alu_ok = !exception;
   mem_ok = !exception;
-  csr_ok = !exception;
+  csr_ok = 1;
 end
 
 

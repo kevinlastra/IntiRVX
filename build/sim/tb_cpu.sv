@@ -12,7 +12,7 @@ import cpu_parameters::*;
   // imem
   logic[xlen-1:0] imem_adr;
   logic[xlen-1:0] imem_resp;
-  logic imem_ack;
+  logic imem_resp_v;
 
   // dmem
   logic dmem_r_v;
@@ -30,6 +30,7 @@ import cpu_parameters::*;
     .rst_n(rst_n),
     .start_address(start_address),
     .resp_instruction(imem_resp),
+    .resp_instruction_v(imem_resp_v),
     .adr_instruction(imem_adr),
     .r_v(dmem_r_v),
     .w_v(dmem_w_v),
@@ -51,7 +52,7 @@ import cpu_parameters::*;
     .data(32'h0),
     .strobe(0),
     .resp(imem_resp),
-    .ack(imem_ack)
+    .resp_valid(imem_resp_v)
   );
 
   cache_32x4 #(.base_addresse(32'h20000), .size(2048), .xlen(xlen)) dmem
@@ -64,7 +65,7 @@ import cpu_parameters::*;
     .data(dmem_data),
     .strobe(dmem_strobe),
     .resp(dmem_resp),
-    .ack(dmem_resp_v)
+    .resp_valid(dmem_resp_v)
   );
 
   parameter size = 8192;

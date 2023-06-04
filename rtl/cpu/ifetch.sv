@@ -12,9 +12,11 @@ import cpu_parameters::*;
   // Memory interface
   output logic[xlen-1:0] target_address,
   input logic[xlen-1:0] resp,
+  input logic resp_v,
 
 	// Pc_gen interface
 	output logic[xlen-1:0] instruction,
+  output logic instruction_v,
   input logic ok,
 
   // PC Control interface
@@ -22,8 +24,7 @@ import cpu_parameters::*;
   input logic flush
 );
 
-logic[31:0] data_i;
-logic[31:0] data_o;
+logic[$bits(resp)+$bits(resp_v)-1:0] data_i, data_o;
 
 
 always begin
@@ -31,7 +32,7 @@ always begin
 end
 
 always begin
-  data_i = resp;
+  data_i = {resp, resp_v};
 end
 
 fifo #(.DATA_SIZE($bits(data_i))) pipeline_f2d
@@ -45,7 +46,7 @@ fifo #(.DATA_SIZE($bits(data_i))) pipeline_f2d
 );
 
 always begin
-  instruction = data_o;
+  {instruction, instruction_v} = data_o;
 end
 
 

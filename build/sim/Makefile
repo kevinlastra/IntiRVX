@@ -10,7 +10,7 @@ SRC=+incdir+../../rtl/cpu \
 		+incdir+../../rtl/memory \
 	  +incdir+../../rtl/utils 
 
-PKGS=../../rtl/cpu/cpu_parameters.sv ../../rtl/cpu/csr_pkg.sv
+PKGS=../../rtl/cpu/cpu_parameters.sv ../../rtl/cpu/csr_pkg.sv ../../rtl/cpu/interfaces_pkg.sv
 
 cpu:
 	verilator ${FLAGS} ${PKGS} ${SRC} ${REMOVE_LINT} ${TB} ${TB-CC}

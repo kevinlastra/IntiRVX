@@ -4,37 +4,31 @@
 
 module register_manager
 import cpu_parameters::*;
+import interfaces_pkg::*;
 (
   // Global interface
   input logic clk,
   input logic rst_n,
 
   // Pc_gen interface
-  input logic[14:0] decode,
+  input decode_bus decode,
   input logic[24:0] instruction,
   input logic[xlen-1:0] pc_i,
   output logic ok_o,
   input logic[xlen-1:0] jal_res_i,
   
   // Calculations units interface
-  output logic[1:0] unit_o,
-  output logic[2:0] sub_unit_o,
-  output logic[3:0] sel_o,
+  output decode_bus decode_o,
   output logic[xlen-1:0] pc_o,
   output logic[xlen-1:0] rs1_o,
   output logic[xlen-1:0] rs2_o,
   output logic[4:0] rd_o,
-  output logic imm_o,
   output logic[xlen-1:0] immediate_o,
   output logic[xlen-1:0] jal_res_o,
-  output logic j_instr2alu,
   output logic instret_v,
 
   input logic flush,
   input logic ok_i,
-
-  // PC control interface
-  output logic j_instr,
 
   // Answer from the calculation units
   input logic[xlen-1:0] res_data,
@@ -45,14 +39,16 @@ import cpu_parameters::*;
 logic[4:0] rs1_ad;
 logic[4:0] rs2_ad;
 
-logic[1:0] unit;
-logic[2:0] sub_unit;
-logic[3:0] sel;
-logic imm;
-
 //pipeline signals
-logic[177:0] data_i;
-logic[177:0] data_o;
+logic[$bits(decode)+
+      $bits(pc_i)+
+      $bits(rs1)+ 
+      $bits(rs2)+ 
+      $bits(rd)+
+      $bits(rd_v)+
+      $bits(immediate)+
+      $bits(jal_res_i)+
+      $bits(dispatch)-1:0] data_i, data_o;
 
 logic[xlen-1:0] rs1;
 logic rs1_v;
@@ -71,23 +67,13 @@ logic l_imm_v;
 
 logic dispatch;
 
-logic exception;
-
-always begin
-  unit = decode[14:13];
-  sub_unit = decode[12:10];
-  sel = decode[9:6];
-  imm = decode[5];
-  exception = decode[1];
-  j_instr = decode[0];
-end
 
 always begin
   rd = instruction[4:0];
   rs1_ad = instruction[12:8];
   rs2_ad = instruction[17:13];
 
-  if((unit == 2'h0 && sub_unit == 3'h1) || (unit == 2'h1 && sub_unit == 3'h1))
+  if((decode.unit == 2'h0 && decode.sub_unit == 3'h1) || (decode.unit == 2'h1 && decode.sub_unit == 3'h1))
     s_imm = {instruction[24:18], instruction[4:0]};
   else
     s_imm = {instruction[24:13]};
@@ -99,9 +85,9 @@ always_latch begin
   l_imm_v = 0;
   s_imm_v = 0;
 
-  if(unit == 2'h0 && sub_unit == 3'h0 && sel != 4'h3) begin
+  if(decode.unit == 2'h0 && decode.sub_unit == 3'h0 && decode.sel != 4'h3) begin
     l_imm_v = 1;
-  end else if(imm | (unit == 2'h2)) begin
+  end else if(decode.imm | (decode.unit == 2'h2)) begin
     s_imm_v = 1;
   end
 
@@ -109,20 +95,20 @@ always_latch begin
   rs1_v = !l_imm_v;
 
   // if ALU and not sub 3 and not immediate
-  rs2_v = (unit == 2'h0) && ((sub_unit != 3'h0 && !imm) | (sub_unit == 3'h1));    
+  rs2_v = (decode.unit == 2'h0) && ((decode.sub_unit != 3'h0 && !decode.imm) | (decode.sub_unit == 3'h1));    
 
   // if not branch conditional or store instruction
-  rd_v = !(unit == 2'h0 && sub_unit == 3'h1) || !(unit == 2'h1 && sub_unit == 3'h1);
+  rd_v = !(decode.unit == 2'h0 && decode.sub_unit == 3'h1) || !(decode.unit == 2'h1 && decode.sub_unit == 3'h1);
 end
 
 always_latch begin
   if(l_imm_v) begin
-    if(unit == 2'h0 && sub_unit == 3'h0 && sel == 4'h2) // jal
+    if(decode.unit == 2'h0 && decode.sub_unit == 3'h0 && decode.sel == 4'h2) // jal
       immediate = {{12{l_imm[19]}}, l_imm[10:1], l_imm[11], l_imm[19:12], 1'b0};
     else
       immediate = {l_imm, 12'h0};    
   end else if(s_imm_v) begin
-    if(unit == 2'h0 && sub_unit == 3'h1) // b
+    if(decode.unit == 2'h0 && decode.sub_unit == 3'h1) // b
         immediate = {{20{s_imm[11]}}, s_imm[0], s_imm[10:5], s_imm[4:1], 1'b0};
     else
       immediate =  {{20{s_imm[11]}} , s_imm};
@@ -142,6 +128,7 @@ register_file register_file
   .r1_ad(rs2_ad),
   .block_rd(rd_v_o),
   .rd(rd_o),
+  .flush(flush),
   .r0_data(rs1),
   .r1_data(rs2),
   .r_v(dispatch)
@@ -151,19 +138,16 @@ register_file register_file
 // push data on the pipeline
 always begin
   data_i = {
-            unit,
-            sub_unit,
-            sel,
+            decode,
             pc_i,
             rs1, 
             rs2, 
             rd,
             rd_v,
-            imm,
             immediate,
             jal_res_i,
-            j_instr,
-            dispatch | !exception};
+            dispatch
+          };
 end
 
 fifo #(.DATA_SIZE($bits(data_i))) pipeline_r2c
@@ -179,18 +163,14 @@ fifo #(.DATA_SIZE($bits(data_i))) pipeline_r2c
 // pull data from the pipeline
 always begin
   {
-    unit_o,
-    sub_unit_o,
-    sel_o,
+    decode_o,
     pc_o,
     rs1_o,
     rs2_o,
     rd_o,
     rd_v_o,
-    imm_o,
     immediate_o,
     jal_res_o,
-    j_instr2alu,
     instret_v
   } = data_o;
 end

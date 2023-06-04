@@ -164,7 +164,10 @@ begin_testcode:
 
 #define RVTEST_CODE_END                                                 \
 end_testcode:                                                           \
-        unimp
+        sw x0, 0(x0);                                                   \
+        nop;                                                            \
+        nop;                                                            \
+        nop;
 
 //-----------------------------------------------------------------------
 // Pass/Fail Macro

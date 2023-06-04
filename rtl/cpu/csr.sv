@@ -3,6 +3,7 @@
 module csr
 import cpu_parameters::*;
 import csr_pkg::*;
+import interfaces_pkg::*;
 (
   // Global interface
   input logic clk,
@@ -11,9 +12,8 @@ import csr_pkg::*;
   // Register manager interface
   output logic ok_o,
 
-  input logic[1:0] unit,
-  input logic[3:0] sel,
-  input logic imm,
+  input decode_bus decode,
+  input logic[xlen-1:0] pc,
 
   input logic[xlen-1:0] rs1,
   input logic[11:0] csr_adr,
@@ -25,18 +25,28 @@ import csr_pkg::*;
   output logic[xlen-1:0] result,
   output logic[4:0] rd_o,
   output logic csr_exception,
+
+  // PC Control interface
+  output logic[xlen-1:0] target,
+  input logic flush,
+
   input logic ok_i
 );
 logic valid_instruction;
 
 logic[xlen-1:0] clear_mask1, clear_mask2;
-logic csr_fault;
 
 logic[xlen-1:0] csr_value;
 
-logic[38:0] data_i, data_o;
+logic[$bits(csr_value)+
+      $bits(rd_i)+
+      $bits(valid_instruction)+
+      $bits(exception_target)+
+      $bits(exception)-1:0] data_i, data_o;
 
- // TODO: csr_q, csr_d
+logic csr_fault;
+logic exception;
+logic[xlen-1:0] exception_target;
 
 /* verilator lint_off UNOPTFLAT */
 
@@ -69,8 +79,8 @@ logic[63:0] minstret_q, minstret_d;
 /* verilator lint_on UNOPTFLAT */
 
 always begin
-  clear_mask1 = sel[0] ? 32'hFFFFFFFF : 'h0;
-  clear_mask2 = sel[1] ? 'h0 : 32'hFFFFFFFF;
+  clear_mask1 = decode.sel[0] ? 32'hFFFFFFFF : 'h0;
+  clear_mask2 = decode.sel[1] ? 'h0 : 32'hFFFFFFFF;
 end
 
 always @(posedge clk) begin
@@ -231,12 +241,24 @@ always begin
 end
 
 always begin
+  exception = csr_fault | decode.mret | decode.illegal_instr;  
+end
+
+always begin
+  if(decode.mret)
+    exception_target = mepc_d;
+  // else
+  // TODO: if interruption then exception_target = mtvec
+end
+
+always begin
   data_i = 
   {
-    csr_value,
+    (exception ? 'h0 : csr_value),
     rd_i,
     valid_instruction,
-    csr_fault
+    exception_target,
+    exception
   };
 end
 
@@ -245,7 +267,7 @@ fifo #(.DATA_SIZE($bits(data_i))) pipeline_csr2wb
   .clk(clk),
   .rst_n(rst_n),
   .data_i(data_i),
-  .flush(0),
+  .flush(flush),
   .ok(ok_i),
   .data_o(data_o)
 );
@@ -255,13 +277,14 @@ always begin
     result,
     rd_o,
     result_v,
+    target,
     csr_exception
   } = data_o;
 end
 
 always begin
-  ok_o = unit == 2'h2;
-  valid_instruction = unit == 2'h2;
+  ok_o = decode.unit == 2'h2;
+  valid_instruction = decode.unit == 2'h2;
 end
 
 endmodule

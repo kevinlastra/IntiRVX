@@ -3,6 +3,7 @@
 
 module cpu
 import cpu_parameters::*;
+import interfaces_pkg::*;
 (
   // Global interface
   input logic clk,
@@ -11,6 +12,7 @@ import cpu_parameters::*;
   
   // system imem interface
   input logic [xlen-1:0] resp_instruction,
+  input logic resp_instruction_v,
   output logic [xlen-1:0] adr_instruction,
 
   // system dmem interface
@@ -26,12 +28,14 @@ import cpu_parameters::*;
 ); 
 
   // ifetch
-  logic[xlen-1:0] data_f2d;
-  logic instruction_flushed;
+  logic[xlen-1:0] instruction_f2d;
+  logic instruction_f2d_v;
+
   // pc_gen
   logic ok_d2f;
 
-  logic[14:0] decode_pg2r;
+  decode_bus decode_pg2r;
+
   logic[24:0] instruction_pg2r;
   logic[xlen-1:0] instr_pc;  
   logic[xlen-1:0] jal_res_i;
@@ -49,21 +53,20 @@ import cpu_parameters::*;
   logic j_instr_rm;
   logic j_instr_alu;
 
+  logic[xlen-1:0] pc_correction;
+
   // Register manager
   logic data_valid_rm2c;
 
-  logic[1:0] unit_o;
-  logic[2:0] sub_unit_o;
-  logic[3:0] sel_o;
+  decode_bus decode_rm2c;
   logic[xlen-1:0] rs1;
   logic[xlen-1:0] rs2;
   logic[4:0] rd;
-  logic imm_o;
   logic[xlen-1:0] immediate_o;
-  logic[xlen-1:0] pc_rm2alu;
+  logic[xlen-1:0] pc_rm2c;
   logic ok_r2p;
-  logic j_instr2alu;
   logic instret_v;
+
   // ALU
   logic alu_result_v;
   logic[xlen-1:0] alu_result;
@@ -87,6 +90,7 @@ import cpu_parameters::*;
   logic[xlen-1:0] csr_result;
   logic[4:0] csr_rd;
   logic csr_exception;
+  logic[xlen-1:0] csr_target;
 
   logic ok_csr2r;
 
@@ -106,7 +110,9 @@ import cpu_parameters::*;
     .rst_n(rst_n),
     .target_address(adr_instruction),
     .resp(resp_instruction),
-    .instruction(data_f2d),
+    .resp_v(resp_instruction_v),
+    .instruction(instruction_f2d),
+    .instruction_v(instruction_f2d_v),
     .ok(ok_d2f),
     .target(target),
     .flush(flush)
@@ -117,7 +123,8 @@ import cpu_parameters::*;
     .clk(clk),
     .rst_n(rst_n),
     .start_address(start_address),
-    .instruction(data_f2d),
+    .instruction(instruction_f2d),
+    .instruction_v(instruction_f2d_v),
     .ok_o(ok_d2f),
     .decode_o(decode_pg2r),
     .instruction_o(instruction_pg2r),
@@ -128,7 +135,7 @@ import cpu_parameters::*;
     .jal_instr(jal_instr_pcc),
     .jal_res(jal_res_i),
     .flush(flush),
-    .alu_pc(alu_target)
+    .pc_correction(pc_correction)
   );
 
   pc_control pc_control
@@ -139,11 +146,12 @@ import cpu_parameters::*;
     .pg_target_valide(pg_target_valide),
     .pg_target(pg_target),
     .jal(jal_instr_pcc),
-    .flush(flush),
-    .j_instr_rm(j_instr_rm),
-    .j_instr_alu(j_instr_alu),
+    .pc_correction(pc_correction),
     .alu_target_valide(alu_target_v),
-    .alu_target(alu_target)
+    .alu_target(alu_target),
+    .csr_target_valide(csr_exception),
+    .csr_target(csr_target),
+    .flush(flush)
   );
 
   register_manager register_manager
@@ -155,46 +163,50 @@ import cpu_parameters::*;
     .instruction(instruction_pg2r),
     .pc_i(instr_pc),
     .jal_res_i(jal_res_i),
-    .unit_o(unit_o),
-    .sub_unit_o(sub_unit_o),
-    .sel_o(sel_o),
-    .pc_o(pc_rm2alu),
+    .decode_o(decode_rm2c),
+    .pc_o(pc_rm2c),
     .rs1_o(rs1),
     .rs2_o(rs2),
     .rd_o(rd),
-    .imm_o(imm_o),
     .immediate_o(immediate_o),
     .jal_res_o(jal_res_o),
-    .j_instr2alu(j_instr2alu),
     .instret_v(instret_v),
     .flush(flush),
     .ok_i(ok_alu2r || ok_mem2r || ok_csr2r),
-    .j_instr(j_instr_rm),
     .res_data(wb_res),
     .res_adr(wb_rd),
     .res_v(wb_res_v)
   );
+
+  logic[$bits(decode_rm2c.unit)-1:0] unit;
+  logic[$bits(decode_rm2c.sub_unit)-1:0] sub_unit;
+  logic[$bits(decode_rm2c.sel)-1:0] sel;
+  logic imm;
+  always begin
+    unit = decode_rm2c.unit;
+    sub_unit = decode_rm2c.sub_unit;
+    sel = decode_rm2c.sel;
+    imm = decode_rm2c.imm;
+  end
 
   alu alu
   (
     .clk(clk),
     .rst_n(rst_n),
     .ok_o(ok_alu2r),
-    .unit(unit_o),
-    .sub_unit(sub_unit_o),
-    .sel(sel_o),
+    .unit(unit),
+    .sub_unit(sub_unit),
+    .sel(sel),
     .rs1(rs1),
     .rs2(rs2),
     .rd_i(rd),
-    .pc(pc_rm2alu),
+    .pc(pc_rm2c),
     .immediate(immediate_o),
-    .imm(imm_o),
-    .j_instr2alu(j_instr2alu),
+    .imm(imm),
     .result_valid(alu_result_v),
     .result(alu_result),
     .rd_o(alu_rd),
     .ok_i(ok_wb2alu),
-    .j_instr(j_instr_alu),
     .target(alu_target),
     .target_valid(alu_target_v),
     .flush(flush)
@@ -205,14 +217,14 @@ import cpu_parameters::*;
     .clk(clk),
     .rst_n(rst_n),
     .ok_o(ok_mem2r),
-    .unit(unit_o),
-    .sub_unit(sub_unit_o),
-    .sel(sel_o),
+    .unit(decode_rm2c.unit),
+    .sub_unit(decode_rm2c.sub_unit),
+    .sel(decode_rm2c.sel),
     .rs1(rs1),
     .rs2(rs2),
     .rd_i(rd),
     .immediate(immediate_o),
-    .imm(imm_o),
+    .imm(decode_rm2c.imm),
     .r_v(r_v),
     .w_v(w_v),
     .req_adr(data_adr),
@@ -231,9 +243,8 @@ import cpu_parameters::*;
     .clk(clk),
     .rst_n(rst_n),
     .ok_o(ok_csr2r),
-    .unit(unit_o),
-    .sel(sel_o),
-    .imm(imm_o),
+    .decode(decode_rm2c),
+    .pc(pc_rm2c),
     .rs1(rs1),
     .csr_adr(immediate_o[11:0]),
     .rd_i(rd),
@@ -242,6 +253,8 @@ import cpu_parameters::*;
     .result(csr_result),
     .rd_o(csr_rd),
     .csr_exception(csr_exception),
+    .target(csr_target),
+    .flush(flush),
     .ok_i(ok_wb2csr)
   );
 

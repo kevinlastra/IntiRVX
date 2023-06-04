@@ -24,7 +24,6 @@ import cpu_parameters::*;
   input logic[xlen-1:0] pc,
   input logic[xlen-1:0] immediate,
   input logic imm,
-  input logic j_instr2alu,
 
   // Write back interface
   output logic result_valid,
@@ -33,8 +32,6 @@ import cpu_parameters::*;
   input logic ok_i,
 
   // PC control interface
-  output logic j_instr,
-
   output logic[xlen-1:0] target,
   output logic target_valid,
 
@@ -75,10 +72,6 @@ always begin
     opb = neg ? ~immediate : immediate;
   else
     opb = neg ? ~rs2 : rs2;
-end
-
-always begin
-  j_instr = j_instr2alu;
 end
 
 always begin

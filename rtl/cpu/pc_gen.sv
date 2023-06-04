@@ -3,6 +3,7 @@
 
 module pc_gen
 import cpu_parameters::*;
+import interfaces_pkg::*;
 (
   // Global interface
   input logic clk,
@@ -11,10 +12,11 @@ import cpu_parameters::*;
 
   // Ifetch interface
   input logic[xlen-1:0] instruction,
+  input logic instruction_v,
   output logic ok_o,
 
   // Register interface
-  output logic[14:0] decode_o,
+  output decode_bus decode_o,
   output logic[24:0] instruction_o,
   output logic[xlen-1:0] pc_o,
   input logic ok_i,
@@ -25,20 +27,21 @@ import cpu_parameters::*;
   output logic[xlen-1:0] next_pc,
   output logic jal_instr,
   input logic flush,
-  input logic[xlen-1:0] alu_pc
+  input logic[xlen-1:0] pc_correction
   );
 
 // local variables
 
-logic[14:0] decode;
+decode_bus decode;
 
 logic[18:0] decode_parse_instr;
 logic[24:0] reg_imm_parse_instr;
 
 logic[31:0] jal_imm;
 
-logic[71:0] data_i;
-logic[71:0] data_o;
+logic[$bits(decode)+
+      $bits(reg_imm_parse_instr)+
+      $bits(pc)-1:0] data_i, data_o;
 
 logic[xlen-1:0] pc;
 
@@ -47,7 +50,6 @@ logic init = 1;
 
 logic INIT = 0;
 logic NEXT = 1;
-// Decode
 
 always_latch begin
   decode_parse_instr = {instruction[31:25], instruction[21:20], instruction[14:12], instruction[6:0]};
@@ -57,11 +59,15 @@ end
 decoder_PG decoder
 (
   .instruction(decode_parse_instr),
+  .instruction_v(instruction_v),
   .decode(decode)
 );
 
 always begin 
-  jal_instr = decode == 'b000000010100000;
+  jal_instr = (decode.unit == 2'h0) && 
+              (decode.sub_unit == 3'h0) &&
+              (decode.sel == 4'h2) && 
+              decode.imm;
 end
 
 // calc new address
@@ -75,7 +81,7 @@ always begin
       NEXT : begin
         if(ok_i) begin
           if(flush) begin
-            next_pc = alu_pc;
+            next_pc = pc_correction;
           end else if (jal_instr) begin
             jal_imm = {{12{instruction[31]}}, instruction[19:12], instruction[20], instruction[30:21], 1'b0};
             next_pc = pc + jal_imm;
@@ -109,7 +115,8 @@ end
 always begin
   data_i = {decode, 
             reg_imm_parse_instr, 
-            pc};
+            pc
+            };
 end
 
 fifo #(.DATA_SIZE($bits(data_i))) pipeline_pg2r
@@ -125,7 +132,8 @@ fifo #(.DATA_SIZE($bits(data_i))) pipeline_pg2r
 always begin
   {decode_o, 
    instruction_o, 
-   pc_o} = data_o;
+   pc_o
+   } = data_o;
 end
 
 always begin

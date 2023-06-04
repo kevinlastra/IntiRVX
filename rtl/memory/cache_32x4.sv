@@ -19,7 +19,7 @@ module cache_32x4
 
     // Answer
     output logic[xlen-1:0] resp,
-    output logic ack
+    output logic resp_valid
 );
 
 parameter cell_size = 32;
@@ -85,6 +85,7 @@ end
 
 always @(negedge clk) begin
   mem_error <= 0;
+  resp_valid <= 0;
   if(rst_n && r_v) begin
     case (offset)
       4'b0000: resp <= mem[index][31:0];
@@ -94,7 +95,7 @@ always @(negedge clk) begin
     default:
       mem_error <= 1;
     endcase
-    ack <= 1;
+    resp_valid <= 1;
   end
 end
 

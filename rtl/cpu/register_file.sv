@@ -22,6 +22,8 @@ import cpu_parameters::*;
   input logic block_rd,
   input logic[4:0] rd,
 
+  input logic flush,
+
   // Outputs
   output logic[xlen-1:0] r0_data,
   output logic[xlen-1:0] r1_data,
@@ -59,6 +61,13 @@ end
 always_latch begin
   if(block_rd && rd != 'h0)
     reg_v_n[rd] <= 'b1;
+end
+
+always begin
+  if(flush) begin
+    for(int i = 0; i < 32; i++)
+      reg_v_n[i] = 1'h0;
+  end
 end
 
 endmodule
