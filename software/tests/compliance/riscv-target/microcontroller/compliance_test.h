@@ -26,9 +26,12 @@
         RVTEST_CODE_END                                                       \
 
 #define RV_COMPLIANCE_DATA_BEGIN                                              \
-        RVTEST_DATA_BEGIN \
+          .align 4;                                                           \
+          .global test_res;                                                   \
+          test_res:                                                           \
+        RVTEST_DATA_BEGIN                                                     \
 
 #define RV_COMPLIANCE_DATA_END                                                \
-        RVTEST_DATA_END \
+        RVTEST_DATA_END                                                       \
 
 #endif

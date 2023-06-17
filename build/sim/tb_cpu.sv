@@ -102,7 +102,7 @@ import cpu_parameters::*;
 
 
   always begin
-    if(cpu.mem.req_adr == 'h0 && cpu.mem.w_v) begin
+    if(cpu.mem.req_adr == 0 && cpu.mem.w_v) begin
       $display("Program exit with status %d", cpu.register_manager.register_file.register[10]);
       $finish;
     end

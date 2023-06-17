@@ -164,6 +164,16 @@ begin_testcode:
 
 #define RVTEST_CODE_END                                                 \
 end_testcode:                                                           \
+        la x11, test_res;                                               \
+        add x10, x0, x0;                                                \
+        lw x10, 0(x11);                                                 \
+        nop;                                                            \
+        nop;                                                            \
+        nop;                                                            \
+        nop;                                                            \
+        nop;                                                            \
+        nop;                                                            \
+        nop;                                                            \
         sw x0, 0(x0);                                                   \
         nop;                                                            \
         nop;                                                            \
