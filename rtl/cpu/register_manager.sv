@@ -48,7 +48,8 @@ logic[$bits(decode)+
       $bits(rd_v)+
       $bits(immediate)+
       $bits(jal_res_i)+
-      $bits(dispatch)-1:0] data_i, data_o;
+      $bits(dispatch)+
+      $bits(branch_instr)-1:0] data_i, data_o;
 
 logic[xlen-1:0] rs1;
 logic rs1_v;
@@ -65,6 +66,8 @@ logic s_imm_v;
 logic[19:0] l_imm;
 logic l_imm_v;
 
+logic branch_instr;
+logic branch_instr_o;
 logic dispatch;
 
 
@@ -97,8 +100,11 @@ always_latch begin
   // if ALU and not sub 3 and not immediate
   rs2_v = (decode.unit == 2'h0) && ((decode.sub_unit != 3'h0 && !decode.imm) | (decode.sub_unit == 3'h1));    
 
+  branch_instr = (decode.unit == 2'h0 && decode.sub_unit == 3'h1) || 
+                 (decode.unit == 2'h0 && decode.sub_unit == 3'h0 && decode.sel == 4'h3);
+
   // if not branch conditional or store instruction
-  rd_v = !(decode.unit == 2'h0 && decode.sub_unit == 3'h1) || !(decode.unit == 2'h1 && decode.sub_unit == 3'h1);
+  rd_v = !(decode.unit == 2'h0 && decode.sub_unit == 3'h1) && !(decode.unit == 2'h1 && decode.sub_unit == 3'h1);
 end
 
 always_latch begin
@@ -146,7 +152,8 @@ always begin
             rd_v,
             immediate,
             jal_res_i,
-            dispatch
+            dispatch,
+            branch_instr | decode.mret
           };
 end
 
@@ -155,7 +162,7 @@ fifo #(.DATA_SIZE($bits(data_i))) pipeline_r2c
   .clk(clk),
   .rst_n(rst_n),
   .data_i(data_i),
-  .flush(flush | !dispatch),
+  .flush(flush | !dispatch | branch_instr_o),
   .ok(ok_i),
   .data_o(data_o)
 );
@@ -171,13 +178,14 @@ always begin
     rd_v_o,
     immediate_o,
     jal_res_o,
-    instret_v
+    instret_v,
+    branch_instr_o
   } = data_o;
 end
 
 
 always begin
-  ok_o = dispatch && ok_i;
+  ok_o = dispatch && ok_i && !branch_instr_o;
 end
 
 

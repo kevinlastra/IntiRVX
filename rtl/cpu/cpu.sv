@@ -22,9 +22,9 @@ import interfaces_pkg::*;
   output logic[xlen-1:0] data_o,
   output logic[3:0] strobe,
 
-  input logic[xlen-1:0] dmem_resp,
-  input logic dmem_resp_v
-
+  input logic[xlen-1:0] dmem_res,
+  input logic dmem_res_v,
+  input logic dmem_res_error
 ); 
 
   // ifetch
@@ -82,6 +82,7 @@ import interfaces_pkg::*;
 
   logic[4:0] mem_rd;
 
+  logic mem_exception;
   logic ok_mem2r;
 
   // CSR
@@ -230,11 +231,13 @@ import interfaces_pkg::*;
     .req_adr(data_adr),
     .req_data(data_o),
     .req_strobe(strobe),
-    .hit(dmem_resp_v),
-    .mem_res(dmem_resp[15:0]),
+    .hit(dmem_res_v),
+    .mem_res(dmem_res[15:0]),
+    .mem_res_error(dmem_res_error),
     .result(mem_result),
     .rd_o(mem_rd),
     .result_v(mem_result_v),
+    .exception(mem_exception),
     .ok_i(ok_wb2mem)
   );
 
@@ -269,6 +272,7 @@ import interfaces_pkg::*;
     .mem_res(mem_result),
     .mem_rd(mem_rd),
     .mem_res_v(mem_result_v),
+    .mem_exception(mem_exception),
     .mem_ok(ok_wb2mem),
     .csr_exception(csr_exception),
     .csr_res(csr_result),

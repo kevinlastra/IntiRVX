@@ -19,7 +19,7 @@ import cpu_parameters::*;
   input logic[xlen-1:0] mem_res,
   input logic[4:0] mem_rd,
   input logic mem_res_v,
-
+  input logic mem_exception,
   output logic mem_ok,
 
   // CSR interface
@@ -48,7 +48,7 @@ always begin
 end
 
 always begin
-  exception = csr_exception;
+  exception = csr_exception | mem_exception;
 end
 
 always begin

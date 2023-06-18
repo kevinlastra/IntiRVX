@@ -89,23 +89,31 @@ COMPLIANCE_RV32I_SRC=\
 										I-XOR-01 \
 										I-XORI-01 
 
-compliance_all: clean compliance_setup compliance_run
+compliance_all: clean compliance_setup compliance_run_all
 
 compliance_setup:
 	cd compliance && make all_variant
 
-compliance_run:
+compliance_run_all:
 	@for i in $(COMPLIANCE_RV32I_SRC) ; do \
-		mv ./compliance/work/rv32i/$$i.elf . ; \
+		mv ./compliance/work/rv32i/$$i.elf .; \
 		${DUMP} -d $$i.elf > $$i.dump; \
 		${COPY} -O verilog -j .text.init --change-section-address .text.init-${TEXT_BASE_ADDRESSE} $$i.elf ihex; \
 		${COPY} -O verilog -j .data --change-section-address .data-${DATA_BASE_ADDRESSE} $$i.elf dhex; \
 		echo "Running $$i.\n"; \
-		../../build/sim/obj_dir/${TB} ; \
+		../../build/sim/obj_dir/${TB}; \
 		echo "\n\n"; \
 		rm ihex dhex *.elf *.dump; \
 	done
 
+PROG ?= I-ADD-01
+compliance_run: clean compliance_setup
+	mv ./compliance/work/rv32i/${PROG}.elf .
+	${DUMP} -d ${PROG}.elf > ${PROG}.dump
+	${COPY} -O verilog -j .text.init --change-section-address .text.init-${TEXT_BASE_ADDRESSE} ${PROG}.elf ihex
+	${COPY} -O verilog -j .data --change-section-address .data-${DATA_BASE_ADDRESSE} ${PROG}.elf dhex
+	echo "Running ${PROG}.\n"
+	../../build/sim/obj_dir/${TB}
 
 clean:
 	rm -f *.o *.riscv *.dump ihex dhex *.vcd base_tests/*.riscv base_tests/*.dump *.elf; \

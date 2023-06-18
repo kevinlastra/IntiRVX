@@ -19,7 +19,8 @@ module cache_32x4
 
     // Answer
     output logic[xlen-1:0] resp,
-    output logic resp_valid
+    output logic resp_valid,
+    output logic resp_error
 );
 
 parameter cell_size = 32;
@@ -55,6 +56,11 @@ always begin
   local_adr = (adr - base_addresse);
   index = local_adr[($clog2(size)-1)+4:4];
   offset = local_adr[3:0] & 4'b1100;
+end
+
+always @(*) begin
+  if((adr >= base_addresse+size || adr < base_addresse) && (w_v || r_v))
+    resp_error = 1;
 end
 
 always begin

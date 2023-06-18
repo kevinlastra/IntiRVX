@@ -32,13 +32,16 @@ import interfaces_pkg::*;
 
 
 always  begin
+  decode.unit = 0;
+  decode.sub_unit = 0;
+  decode.sel = 0;
   decode.imm = 0;
   decode.fence = 0;
   decode.ecall = 0;
   decode.ebreak = 0;
 
-  decode.mret   = 0;
   decode.illegal_instr = 0;
+  decode.mret   = 0;
 
   casez (instruction)
     19'b????????????0110111: // LUI

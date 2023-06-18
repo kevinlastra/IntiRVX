@@ -13,6 +13,7 @@ import cpu_parameters::*;
   logic[xlen-1:0] imem_adr;
   logic[xlen-1:0] imem_resp;
   logic imem_resp_v;
+  logic imem_resp_error;
 
   // dmem
   logic dmem_r_v;
@@ -21,8 +22,9 @@ import cpu_parameters::*;
   logic[xlen-1:0] dmem_data;
   logic[3:0] dmem_strobe;
 
-  logic[xlen-1:0] dmem_resp;
-  logic dmem_resp_v;
+  logic[xlen-1:0] dmem_res;
+  logic dmem_res_v;
+  logic dmem_res_error;
   // CPU
   cpu cpu 
   (
@@ -37,8 +39,9 @@ import cpu_parameters::*;
     .data_adr(dmem_data_adr),
     .data_o(dmem_data),
     .strobe(dmem_strobe),
-    .dmem_resp(dmem_resp),
-    .dmem_resp_v(dmem_resp_v)
+    .dmem_res(dmem_res),
+    .dmem_res_v(dmem_res_v),
+    .dmem_res_error(dmem_res_error)
   );
 
   // memory
@@ -52,7 +55,8 @@ import cpu_parameters::*;
     .data(32'h0),
     .strobe(0),
     .resp(imem_resp),
-    .resp_valid(imem_resp_v)
+    .resp_valid(imem_resp_v),
+    .resp_error(imem_resp_error)
   );
 
   cache_32x4 #(.base_addresse(32'h20000), .size(2048), .xlen(xlen)) dmem
@@ -64,8 +68,9 @@ import cpu_parameters::*;
     .adr(dmem_data_adr),
     .data(dmem_data),
     .strobe(dmem_strobe),
-    .resp(dmem_resp),
-    .resp_valid(dmem_resp_v)
+    .resp(dmem_res),
+    .resp_valid(dmem_res_v),
+    .resp_error(dmem_res_error)
   );
 
   parameter size = 8192;

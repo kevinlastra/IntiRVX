@@ -204,14 +204,16 @@ end_testcode:                                                           \
 // Data Section Macro
 //-----------------------------------------------------------------------
 
-#define EXTRA_DATA
-
+#define EXTRA_DATA                                                      
+        
 #define RVTEST_DATA_BEGIN                                               \
         EXTRA_DATA                                                      \
         .pushsection .tohost,"aw",@progbits;                            \
         .align 8; .global tohost; tohost: .dword 0;                     \
         .align 8; .global fromhost; fromhost: .dword 0;                 \
         .popsection;                                                    \
+        .align 4; .global test_res; test_res: .dword 0;                 \
+        .align 4; .global test_correct_res; test_correct_res: .dword 0; \
         .align 4; .global begin_signature; begin_signature:
 
 #define RVTEST_DATA_END                                                 \

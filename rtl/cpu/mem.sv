@@ -32,12 +32,14 @@ import cpu_parameters::*;
 
 	input logic hit,
 	input logic[15:0] mem_res,
+  input logic mem_res_error,
 
 	// Write back interface
 	output logic[xlen-1:0] result,
 	output logic[4:0] rd_o,
 	output logic result_v,
-	
+	output logic exception,
+
 	input logic ok_i
 );
 
@@ -82,6 +84,10 @@ always @(*) begin
 		mem_result = {{16{mem_res[15]}}, mem_res};
 	else
 		mem_result = {{16{1'b0}}, mem_res};
+end
+
+always @(*) begin
+  exception = mem_res_error;  
 end
 
 always begin
