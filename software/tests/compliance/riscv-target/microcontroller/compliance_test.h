@@ -28,7 +28,9 @@
 #define RV_COMPLIANCE_DATA_BEGIN                                              \
           .align 4;                                                           \
           .global test_res;                                                   \
+          .global test_correct_res;                                           \
           test_res:                                                           \
+          test_correct_res:                                                           \
         RVTEST_DATA_BEGIN                                                     \
 
 #define RV_COMPLIANCE_DATA_END                                                \

@@ -100,13 +100,12 @@ import cpu_parameters::*;
     end
   end
 
-
   always begin
     if(cpu.mem.req_adr == 0 && cpu.mem.w_v) begin
       $display("Program exit with status %d", cpu.register_manager.register_file.register[10]);
       $finish;
+      $finish;
     end
   end
-
 
 endmodule
