@@ -36,9 +36,9 @@ crt0.o:
 	${DUMP} -d $< > $*.dump
 
 %.ihex : %.riscv
-	${COPY} -O verilog -j .text --change-section-address .text-${TEXT_BASE_ADDRESSE}  $< $@
+	${COPY} -O verilog -j .text --change-section-address .text-${TEXT_BASE_ADDRESSE} $< $@
 %.dhex : %.riscv
-	${COPY} -O verilog -j .data $< $@
+	${COPY} -O verilog -j .data --change-section-address .data-${DATA_BASE_ADDRESSE} $< $@
 
 COMPLIANCE_RV32I_SRC=\
 										I-ADD-01 \

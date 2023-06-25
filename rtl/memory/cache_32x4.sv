@@ -58,9 +58,15 @@ always begin
   offset = local_adr[3:0] & 4'b1100;
 end
 
+logic db_sup;
+logic db_inf;
+
 always @(*) begin
-  if((adr >= base_addresse+size || adr < base_addresse) && (w_v || r_v))
-    resp_error = 1;
+  if((w_v || r_v) && rst_n) begin
+    resp_error = !(adr >= base_addresse && adr < base_addresse+size);
+    db_sup = adr >= base_addresse;
+    db_inf = adr < base_addresse+size;
+  end
 end
 
 always begin

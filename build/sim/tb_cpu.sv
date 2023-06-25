@@ -45,7 +45,7 @@ import cpu_parameters::*;
   );
 
   // memory
-  cache_32x4 #(.base_addresse(32'h10000), .size(2048), .xlen(xlen)) imem
+  cache_32x4 #(.base_addresse(32'h10000), .size(4096), .xlen(xlen)) imem
   (
     .clk(clk),
     .rst_n(rst_n),
@@ -59,7 +59,7 @@ import cpu_parameters::*;
     .resp_error(imem_resp_error)
   );
 
-  cache_32x4 #(.base_addresse(32'h20000), .size(2048), .xlen(xlen)) dmem
+  cache_32x4 #(.base_addresse(32'h20000), .size(16384), .xlen(xlen)) dmem
   (
     .clk(clk),
     .rst_n(rst_n),

@@ -1,15 +1,14 @@
 
 
+
+
 int main();
-
-extern unsigned __stack_top;
-
 
 asm
 (
-  ".globl _start\n"
+  ".globl __start\n"
   "__start:\n"
-  "la sp, __stack_init\n"
+  "la sp, __start_stack\n"
   "j call_main\n"
 );
 
@@ -35,4 +34,5 @@ void call_main()
   __exit(status);
 }
 
-__attribute__((section(".stack"), used)) unsigned* __stack_init = &__stack_top;
+
+//__attribute__((section(".stack"), used)) unsigned* __start_stack;

@@ -10,24 +10,22 @@ SECTIONS
     . = 0x10000;
     .text : 
     { 
-      *(.text)
+      . = ALIGN(4);
       KEEP(*(.stack))
+      . = ALIGN(4);
+      *(.text)
     }
     . = 0x20000;
     .data : 
     { 
-      *(.data*) 
+      *(.data*)
     }
-    .bss (NOLOAD) : 
-    { 
-      *(.bss*)
-      *(COMMON) 
-    }
-    .stack (NOLOAD) : 
+    .stack : 
     {
-      . = ALIGN(8);
-      __stack_top = .;
+      . = ALIGN(4);
+      __end_stack = .;
       . = . + __stack_size;
-      . = ALIGN(8);
+      . = ALIGN(4);
+      __start_stack = .;
     }
 }

@@ -97,8 +97,8 @@ always_latch begin
   // if ALU sub 0 and not jarl then the rs1 is not used
   rs1_v = !l_imm_v;
 
-  // if ALU and not sub 3 and not immediate
-  rs2_v = (decode.unit == 2'h0) && ((decode.sub_unit != 3'h0 && !decode.imm) | (decode.sub_unit == 3'h1));    
+  // if ALU and not immediate or SX
+  rs2_v = (decode.unit == 2'h0 && decode.sub_unit != 3'h0 && (!decode.imm | decode.sub_unit == 3'h1)) | (decode.unit == 2'h1 && decode.sub_unit == 3'h1);
 
   branch_instr = (decode.unit == 2'h0 && decode.sub_unit == 3'h1) || 
                  (decode.unit == 2'h0 && decode.sub_unit == 3'h0 && decode.sel == 4'h3);

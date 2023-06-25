@@ -22,8 +22,8 @@ int* sort(int a[], int size)
 
 int main()
 {
-  int a[10] = {8,6,3,4,5,2,1,9,0,7};
-  int good[10] = {0,1,2,3,4,5,6,7,8,9};
+  static int a[10] = {8,6,3,4,5,2,1,9,0,7};
+  static int good[10] = {0,1,2,3,4,5,6,7,8,9};
 
   int* res = sort(&a, 10);
 

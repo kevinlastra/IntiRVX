@@ -75,7 +75,7 @@ always begin
 end
 
 always begin
-  diff = opb[31] ^ rs1[31];
+  diff = rs2[31] ^ rs1[31];
 end
 
 always begin
