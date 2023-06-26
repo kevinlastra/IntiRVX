@@ -2,7 +2,7 @@
 __stack_size = 0x2000;
 
 
-ENTRY (_start)
+ENTRY (__start)
 
 
 SECTIONS
@@ -10,8 +10,7 @@ SECTIONS
     . = 0x10000;
     .text : 
     { 
-      . = ALIGN(4);
-      KEEP(*(.stack))
+      . = __start;
       . = ALIGN(4);
       *(.text)
     }
@@ -19,13 +18,16 @@ SECTIONS
     .data : 
     { 
       *(.data*)
+      *(.ro.data*)
     }
-    .stack : 
+    .bss : 
     {
+      __sbss = .;
       . = ALIGN(4);
-      __end_stack = .;
+      __sstack = .;
       . = . + __stack_size;
       . = ALIGN(4);
-      __start_stack = .;
+      __estack = .;
+      __ebss = .;
     }
 }

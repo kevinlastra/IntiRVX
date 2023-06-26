@@ -4,12 +4,14 @@
 
 int main();
 
+extern unsigned __sstack[], __sbss[], __ebss[];
+
 asm
 (
   ".globl __start\n"
   "__start:\n"
-  "la sp, __start_stack\n"
-  "j call_main\n"
+  "la sp, __sstack\n"
+  "j _main\n"
 );
 
 
@@ -24,8 +26,15 @@ asm
   "nop\n"
 );
 
-void call_main()
+void _main()
 {
+  // init bss segment 
+  for(unsigned int* bss = __sbss; bss < __ebss; bss++)
+  {
+    *bss = 0;
+  }
+
+  // call main
   int status = main();
 
   // exceptions handlers
@@ -34,5 +43,3 @@ void call_main()
   __exit(status);
 }
 
-
-//__attribute__((section(".stack"), used)) unsigned* __start_stack;

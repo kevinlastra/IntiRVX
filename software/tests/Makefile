@@ -12,7 +12,7 @@ MABI=ilp32
 
 TB=Vtb_cpu
 
-FLAGS= -nostdlib -march=${MARCH} -mabi=${MABI} -T ../linkers/riscv32.ld -I/usr/include
+FLAGS= -nostdlib -march=${MARCH} -mabi=${MABI} -Wl,-Map,output.map -T ../linkers/riscv32.ld -I/usr/include
 
 TEXT_BASE_ADDRESSE=0x10000
 DATA_BASE_ADDRESSE=0x20000
@@ -116,6 +116,6 @@ compliance_run: clean compliance_setup
 	../../build/sim/obj_dir/${TB}
 
 clean:
-	rm -f *.o *.riscv *.dump ihex dhex *.vcd base_tests/*.riscv base_tests/*.dump *.elf; \
+	rm -f *.o *.riscv *.dump ihex dhex *.vcd base_tests/*.riscv base_tests/*.dump *.elf *.map; \
 	cd ./compliance; \
 	make clean
