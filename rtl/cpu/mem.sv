@@ -43,21 +43,28 @@ import cpu_parameters::*;
 	input logic ok_i
 );
 
-
-logic[xlen+5:0] data_i;
-logic[xlen+5:0] data_o;
-
 logic[3:0] strobe;
-logic sign_ext;
+
+logic sign_ext_i;
+logic sign_ext_o;
+
+logic full;
+logic pop;
+
+logic valid_o;
+
+logic[$bits(rd_i)+$bits(sign_ext_i):0] data_i;
+logic[$bits(rd_i)+$bits(sign_ext_i):0] data_o;
 
 logic[xlen-1:0] mem_result;
 
+// Request 
 always begin
 	req_adr = rs1 + immediate;	
 	req_data = rs2;
 	r_v = unit == 2'h1 && sub_unit == 3'h0;
 	w_v = unit == 2'h1 && sub_unit == 3'h1;
-	sign_ext = !(sub_unit == 3'h0 && (sel == 4'h3 || sel == 4'h4));
+	sign_ext_i = !(sub_unit == 3'h0 && (sel == 4'h3 || sel == 4'h4));
 end
 
 always begin
@@ -79,6 +86,40 @@ always begin
 	end
 end
 
+
+// Answer
+
+always begin
+	data_i = 
+	{
+		rd_i,
+    sign_ext_i
+	};
+end
+
+pipe 
+  #(
+    .DATA_SIZE($bits(data_i)),
+    .DEPTH(1)
+  ) 
+pipeline_pg2r
+(
+  .clk(clk),
+  .rst_n(rst_n),
+  .pop(pop),
+  .full(full),
+  .data_i(data_i),
+  .valid_i(unit == 2'h1),
+  .data_o(data_o),
+  .valid_o(valid_o)
+);
+always begin
+	{
+    rd_o,
+    sign_ext_o
+	} = data_o;
+end
+
 always @(*) begin
   if(sign_ext)
 		mem_result = {{16{mem_res[15]}}, mem_res};
@@ -88,32 +129,6 @@ end
 
 always @(*) begin
   exception = mem_res_error;  
-end
-
-always begin
-	data_i = 
-	{
-		mem_result,
-		rd_i,
-		hit
-	};
-end
-
-fifo #(.DATA_SIZE($bits(data_i))) pipeline_pg2r
-(
-  .clk(clk),
-  .rst_n(rst_n),
-  .data_i(data_i),
-  .flush(0), //flush | !ok_o
-  .ok(ok_i),
-  .data_o(data_o)
-);
-always begin
-	{
-		result,
-		rd_o,
-		result_v
-	} = data_o;
 end
 
 always begin
