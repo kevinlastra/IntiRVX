@@ -23,8 +23,10 @@ module fifo
 logic[DATA_SIZE-1:0] data;
 
 
-always_ff @(posedge clk) begin
-  if(rst_n && ok) begin
+always_ff @(posedge clk or negedge rst_n) begin
+  if(!rst_n) begin
+    data_o <= '0;
+  end else if(ok) begin
     data_o <= data;
   end
 end

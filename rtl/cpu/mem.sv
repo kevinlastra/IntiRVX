@@ -51,12 +51,22 @@ logic sign_ext_o;
 logic full;
 logic pop;
 
-logic valid_o;
+logic data_on_pipe_valid;
 
-logic[$bits(rd_i)+$bits(sign_ext_i):0] data_i;
-logic[$bits(rd_i)+$bits(sign_ext_i):0] data_o;
+logic[$bits(rd_i)+$bits(sign_ext_i)-1:0] pipe_in;
+logic[$bits(rd_i)+$bits(sign_ext_i)-1:0] pipe_out;
 
 logic[xlen-1:0] mem_result;
+logic[4:0] rd_pipe;
+
+logic[$bits(result)+
+      $bits(rd_o)+
+      $bits(exception)+
+      $bits(result_v)-1:0] data_i, data_o;
+
+always begin
+  ok_o = unit == 2'h1;
+end
 
 // Request 
 always begin
@@ -90,7 +100,7 @@ end
 // Answer
 
 always begin
-	data_i = 
+	pipe_in = 
 	{
 		rd_i,
     sign_ext_i
@@ -99,40 +109,70 @@ end
 
 pipe 
   #(
-    .DATA_SIZE($bits(data_i)),
+    .DATA_SIZE($bits(pipe_in)),
     .DEPTH(1)
   ) 
-pipeline_pg2r
+answer_pipe
 (
   .clk(clk),
   .rst_n(rst_n),
   .pop(pop),
   .full(full),
-  .data_i(data_i),
+  .data_i(pipe_in),
   .valid_i(unit == 2'h1),
-  .data_o(data_o),
-  .valid_o(valid_o)
+  .data_o(pipe_out),
+  .valid_o(data_on_pipe_valid)
 );
+
 always begin
 	{
-    rd_o,
+    rd_pipe,
     sign_ext_o
-	} = data_o;
+	} = pipe_out;
 end
 
 always @(*) begin
-  if(sign_ext)
-		mem_result = {{16{mem_res[15]}}, mem_res};
-	else
-		mem_result = {{16{1'b0}}, mem_res};
+  if(hit && data_on_pipe_valid) begin
+    if(sign_ext_o)
+	  	mem_result = {{16{mem_res[15]}}, mem_res};
+	  else
+	  	mem_result = {{16{1'b0}}, mem_res};
+  end
 end
+
+always @(posedge clk) begin
+  pop <= hit;
+end
+
+// pipeline
 
 always @(*) begin
-  exception = mem_res_error;  
+  data_i = 
+  {
+    mem_result,
+    rd_pipe,
+    mem_res_error,
+    data_on_pipe_valid
+  };
 end
 
-always begin
-  ok_o = unit == 2'h1;
+fifo #(.DATA_SIZE($bits(data_i))) pipeline_m2w
+(
+  .clk(clk),
+  .rst_n(rst_n),
+  .data_i(data_i),
+  .flush(0),
+  .ok(ok_i),
+  .data_o(data_o)
+);
+
+always @(*) begin
+  {
+    result,
+    rd_o,
+    exception,
+    result_v
+  } = data_o;
 end
 
 endmodule

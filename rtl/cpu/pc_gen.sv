@@ -46,7 +46,7 @@ logic[$bits(decode)+
 logic[xlen-1:0] pc;
 
 logic state_c;
-logic init = 1;
+logic init;
 
 logic INIT = 0;
 logic NEXT = 1;
@@ -93,8 +93,12 @@ always begin
     endcase
   end
 end
-always @(posedge clk) begin
-  if (rst_n) begin
+always @(posedge clk or negedge rst_n) begin
+  if(!rst_n) begin
+  end else begin
+    pc <= next_pc;
+    jal_res <= next_pc;
+
     if(init) begin
       init <= 0;
     end else begin
@@ -102,15 +106,6 @@ always @(posedge clk) begin
     end
   end
 end
-
-    
-always @(posedge clk) begin
-  if(rst_n)begin
-    pc <= next_pc;
-    jal_res <= next_pc;
-  end
-end
-
 
 always begin
   data_i = {decode, 

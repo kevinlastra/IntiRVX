@@ -83,7 +83,7 @@ always begin
   clear_mask2 = decode.sel[1] ? 'h0 : 32'hFFFFFFFF;
 end
 
-always @(posedge clk) begin
+always @(posedge clk or negedge rst_n) begin
   if(!rst_n) begin
     mhartid_d <= mhartid_i;
     mstatus_d <= mstatus_i;

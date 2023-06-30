@@ -80,34 +80,34 @@ always begin
     cell_mask[31:24] = 8'hFF;
 end
 
-always @(negedge clk) begin
-  mem_error <= 0;
-  if(rst_n && w_v) begin
-    case (offset)
-      4'b0000: mem[index][31:0] <= (data & cell_mask);
-      4'b0100: mem[index][63:32] <= (data & cell_mask);
-      4'b1000: mem[index][95:64] <= (data & cell_mask);
-      4'b1100: mem[index][127:96] <= (data & cell_mask);
-    default:
-      mem_error <= 1;
-    endcase
-  end
-end
 
-
-always @(negedge clk) begin
+always @(negedge clk or negedge rst_n) begin
   mem_error <= 0;
   resp_valid <= 0;
-  if(rst_n && r_v) begin
-    case (offset)
-      4'b0000: resp <= mem[index][31:0];
-      4'b0100: resp <= mem[index][63:32];
-      4'b1000: resp <= mem[index][95:64];
-      4'b1100: resp <= mem[index][127:96];
-    default:
-      mem_error <= 1;
+  if(!rst_n) begin
+  end else begin
+    if(r_v) begin
+      case (offset)
+        4'b0000: resp <= mem[index][31:0];
+        4'b0100: resp <= mem[index][63:32];
+        4'b1000: resp <= mem[index][95:64];
+        4'b1100: resp <= mem[index][127:96];
+      default:
+        mem_error <= 1;
+      endcase
+      resp_valid <= 1;
+    end
+
+    if(rst_n && w_v) begin
+      case (offset)
+        4'b0000: mem[index][31:0] <= (data & cell_mask);
+        4'b0100: mem[index][63:32] <= (data & cell_mask);
+        4'b1000: mem[index][95:64] <= (data & cell_mask);
+        4'b1100: mem[index][127:96] <= (data & cell_mask);
+      default:
+        mem_error <= 1;
     endcase
-    resp_valid <= 1;
+  end
   end
 end
 

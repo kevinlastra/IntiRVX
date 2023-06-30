@@ -40,11 +40,11 @@ generate if(DEPTH == 1) begin
 
   always @(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
-      data = '0;
-      valid = 0;
+      data <= '0;
+      valid <= 0;
     end else if(pop) begin
-      data = data_i;
-      valid = valid_i;
+      data <= data_i;
+      valid <= valid_i;
     end
   end
   
