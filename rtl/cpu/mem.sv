@@ -31,7 +31,7 @@ import cpu_parameters::*;
 	output logic[3:0] req_strobe,
 
 	input logic hit,
-	input logic[15:0] mem_res,
+	input logic[xlen-1:0] mem_res,
   input logic mem_res_error,
 
 	// Write back interface
@@ -44,20 +44,6 @@ import cpu_parameters::*;
 );
 
 logic[3:0] strobe;
-
-logic sign_ext_i;
-logic sign_ext_o;
-
-logic full;
-logic pop;
-
-logic data_on_pipe_valid;
-
-logic[$bits(rd_i)+$bits(sign_ext_i)-1:0] pipe_in;
-logic[$bits(rd_i)+$bits(sign_ext_i)-1:0] pipe_out;
-
-logic[xlen-1:0] mem_result;
-logic[4:0] rd_pipe;
 
 logic[$bits(result)+
       $bits(rd_o)+
@@ -74,7 +60,6 @@ always begin
 	req_data = rs2;
 	r_v = unit == 2'h1 && sub_unit == 3'h0;
 	w_v = unit == 2'h1 && sub_unit == 3'h1;
-	sign_ext_i = !(sub_unit == 3'h0 && (sel == 4'h3 || sel == 4'h4));
 end
 
 always begin
@@ -96,63 +81,13 @@ always begin
 	end
 end
 
-
-// Answer
-
-always begin
-	pipe_in = 
-	{
-		rd_i,
-    sign_ext_i
-	};
-end
-
-pipe 
-  #(
-    .DATA_SIZE($bits(pipe_in)),
-    .DEPTH(1)
-  ) 
-answer_pipe
-(
-  .clk(clk),
-  .rst_n(rst_n),
-  .pop(pop),
-  .full(full),
-  .data_i(pipe_in),
-  .valid_i(unit == 2'h1),
-  .data_o(pipe_out),
-  .valid_o(data_on_pipe_valid)
-);
-
-always begin
-	{
-    rd_pipe,
-    sign_ext_o
-	} = pipe_out;
-end
-
-always @(*) begin
-  if(hit && data_on_pipe_valid) begin
-    if(sign_ext_o)
-	  	mem_result = {{16{mem_res[15]}}, mem_res};
-	  else
-	  	mem_result = {{16{1'b0}}, mem_res};
-  end
-end
-
-always @(posedge clk) begin
-  pop <= hit;
-end
-
-// pipeline
-
 always @(*) begin
   data_i = 
   {
-    mem_result,
-    rd_pipe,
+    mem_res,
+    rd_i,
     mem_res_error,
-    data_on_pipe_valid
+    hit
   };
 end
 

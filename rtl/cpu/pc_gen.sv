@@ -95,6 +95,8 @@ always begin
 end
 always @(posedge clk or negedge rst_n) begin
   if(!rst_n) begin
+    state_c <= INIT;
+    init <= 1;
   end else begin
     pc <= next_pc;
     jal_res <= next_pc;

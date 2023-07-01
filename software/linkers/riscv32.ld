@@ -1,5 +1,5 @@
 
-__stack_size = 0x2000;
+__stack_size = 0x20;
 
 
 ENTRY (__start)

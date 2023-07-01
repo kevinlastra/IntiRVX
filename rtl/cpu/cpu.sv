@@ -232,7 +232,7 @@ import interfaces_pkg::*;
     .req_data(data_o),
     .req_strobe(strobe),
     .hit(dmem_res_v),
-    .mem_res(dmem_res[15:0]),
+    .mem_res(dmem_res),
     .mem_res_error(dmem_res_error),
     .result(mem_result),
     .rd_o(mem_rd),
